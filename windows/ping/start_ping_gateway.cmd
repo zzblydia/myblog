@@ -1,0 +1,1 @@
+cscript C:\vm\ping\ping.vbs 192.168.8.1 -t -l 1000 -w 5000 >>C:\vm\ping\pinglog\%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%_ping_gateway.txt 
