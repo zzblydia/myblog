@@ -16,7 +16,6 @@ endif ()
 
 # test find_package
 find_package(OpenSSL QUIET)
-message("OPENSSL_FOUND: ${OPENSSL_FOUND}")
 if (OPENSSL_FOUND)
     message("OPENSSL_VERSION: ${OPENSSL_VERSION}")
     message("OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
