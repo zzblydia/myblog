@@ -1,0 +1,37 @@
+cmake_minimum_required(VERSION 3.25)
+include(CheckFunctionExists)
+project(find_openssl_test C)
+set(CMAKE_C_STANDARD 11)
+
+# test pkg_check_modules
+find_package(PkgConfig QUIET)
+message("PKGCONFIG_FOUND: ${PKGCONFIG_FOUND}")
+pkg_check_modules(PC_OPENSSL openssl QUIET)
+if (PC_OPENSSL_FOUND)
+    message("PC_OPENSSL_VERSION: ${PC_OPENSSL_VERSION}")
+    message("PC_OPENSSL_INCLUDE_DIRS: ${PC_OPENSSL_INCLUDE_DIRS}")
+    message("PC_OPENSSL_LIBRARIES: ${PC_OPENSSL_LIBRARIES}")
+    message("PC_OPENSSL_LINK_LIBRARIES: ${PC_OPENSSL_LINK_LIBRARIES}")
+endif ()
+
+# test find_package
+find_package(OpenSSL QUIET)
+message("OPENSSL_FOUND: ${OPENSSL_FOUND}")
+if (OPENSSL_FOUND)
+    message("OPENSSL_VERSION: ${OPENSSL_VERSION}")
+    message("OPENSSL_INCLUDE_DIR: ${OPENSSL_INCLUDE_DIR}")
+    message("OPENSSL_LIBRARIES: ${OPENSSL_LIBRARIES}")
+    set(PUBLIC_INCLUDE_DIRS "${OPENSSL_INCLUDE_DIR}")
+    set(PUBLIC_LIBRARIES ${OPENSSL_LIBRARIES})
+endif ()
+
+# test check_function_exists
+if (DEFINED PUBLIC_INCLUDE_DIRS)
+    set(CMAKE_REQUIRED_INCLUDES ${PUBLIC_INCLUDE_DIRS})
+    message("CMAKE_REQUIRED_INCLUDES: ${CMAKE_REQUIRED_INCLUDES}")
+endif()
+if (DEFINED PUBLIC_LIBRARIES)
+    set(CMAKE_REQUIRED_LIBRARIES ${PUBLIC_LIBRARIES})
+    message("CMAKE_REQUIRED_LIBRARIES: ${CMAKE_REQUIRED_LIBRARIES}")
+endif()
+CHECK_FUNCTION_EXISTS(HMAC_CTX_new LWS_HAVE_HMAC_CTX_new)
