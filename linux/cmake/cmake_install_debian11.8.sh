@@ -29,5 +29,5 @@ sudo make install
 /opt/cmake/bin/cmake --version
 
 # Add to env
-echo 'export PATH="/opt/cmake/bin:$PATH"' >> /etc/profile
+echo 'export PATH="/opt/cmake/bin:$PATH"' | sudo tee -a /etc/profile
 source /etc/profile

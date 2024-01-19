@@ -19,7 +19,8 @@ make -j$(nproc) || make
 sudo make install
 
 # env
-echo 'export PATH="/opt/openssl/bin:$PATH"' >> /etc/profile
+echo 'export PATH="/opt/openssl/bin:$PATH"' | sudo tee -a /etc/profile
+source /etc/profile
 
 # ./openssl version
 # ./openssl: error while loading shared libraries: libssl.so.3: cannot open shared object file: No such file or directory
