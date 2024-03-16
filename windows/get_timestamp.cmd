@@ -1,5 +1,5 @@
 @echo off
-
+rem --------------------------------------------------------------
 rem 方法一
 rem date /t
 rem 2023/12/16 周六
@@ -23,7 +23,11 @@ rem echo time:%hour%%minute%%second%_%millisecond%
 set timestamp=%year%%month%%day%_%hour%%minute%%second%
 echo timestamp:%timestamp%
 
+rem --------------------------------------------------------------
 rem 方法二
+rem time 0到11点时小时数值前有空格
 echo timestamp_simple:%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%
+
+if %time:~0,2% LEQ 9 (echo timestamp_simple:%date:~0,4%%date:~5,2%%date:~8,2%_0%time:~1,1%%time:~3,2%%time:~6,2%) else (echo timestamp_simple:%date:~0,4%%date:~5,2%%date:~8,2%_%time:~0,2%%time:~3,2%%time:~6,2%)
 
 pause
