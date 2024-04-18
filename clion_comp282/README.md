@@ -1,13 +1,16 @@
-COMP282 – The C++ Programming Language
+# COMP282 – The C++ Programming Language  
 University of Liverpool
 Department of Computer Science
 Assignment CA1 : C++ Console Application
-1 Deadline
+
+## 1 Deadline  
 Monday 29th of April at 17:00
 Feedback will be released on Monday the 20th of May (3 wks later).
-2 Weighting
+
+## 2 Weighting  
 50%
-3 Overview
+
+## 3 Overview  
 You will create a small interactive console-based (i.e. text based) adventure game. The
 project consists of 9 tasks. You are expected to use Visual Studio 2022 Community
 Edition to build your game. You should complete the tasks in order, as some tasks
@@ -31,19 +34,19 @@ assignment that I may have missed, or if you feel something is unclear, please c
 (有关于作业澄清的专门讨论）。
 
 
-4 Submission Requirements
+## 4 Submission Requirements  
 I will upload a separate document to Canvas describing submission requirements but it is
 likely that you will upload your cpp and h files to Codegrade. I will also upload a rubric
 describing the mark scheme. Marking will be a combination of running automatic tests
 and manually reviewing the code.
 
-4 提交要求
+提交要求  
 我将在 Canvas 上传一份单独的文档，说明提交作业的要求。
 您可能会将 cpp 和 h 文件上传到 Codegrade。我还将上传一份
 说明评分标准。评分将结合运行自动测试
 和人工审核代码相结合。
 
-4.1 Overview: Fantasy Quest Adventure Game
+### 4.1 Overview: Fantasy Quest Adventure Game  
 The assignment is to create a basic command-line game using C++ and organise game
 structure using OOP methods.
 The game has a fantasy theme, in a style similar to Dungeons and Dragons, consisting
