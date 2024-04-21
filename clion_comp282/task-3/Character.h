@@ -2,6 +2,7 @@
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
+#include <iostream>
 #include <string>
 #include <vector>
 #include "Item.h"
@@ -32,9 +33,9 @@ public:
 class Player : public Character {
 private:
     int score;
-    std::vector<Weapon> weapons;
-    std::vector<Potion> potions;
-    std::vector<Treasure> treasures;
+    std::vector<Weapon*> weapons;
+    std::vector<Potion*> potions;
+    std::vector<Treasure*> treasures;
     Location* currentLocation;
 
 public:
@@ -44,6 +45,16 @@ public:
     int getScore() const;
     void setCurrentLocation(Location* newLocation);
     Location* getCurrentLocation();
+    void addWeapon(Weapon* weapon);
+    void addPotion(Potion* potion);
+    void addTreasure(Treasure* treasure);
+
+    // 显示物品
+    void displayItems() const;
+
+    // 访问和清理
+    const std::vector<Potion*> getPotions();
+    void clearPotions();
 };
 
 #endif

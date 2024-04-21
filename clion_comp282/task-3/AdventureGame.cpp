@@ -5,6 +5,7 @@
 void DescribeLocation(Player &player) {
     // Function to describe the current location
     std::cout << "Your current location is: " << player.getCurrentLocation()->getName() << std::endl;
+    player.getCurrentLocation()->displayItems();
 }
 
 void DescribeExits(Player &player) {
@@ -68,6 +69,47 @@ int main() {
     library.addExit('W', &house);  // library的西面是house
     library.addExit('S', &garden);  // library的南面是garden
 
+    // add item
+    Treasure emerald("emerald", 40);
+    cave.addItem(&emerald);
+
+    Treasure sapphire("sapphire", 40);
+    field.addItem(&sapphire);
+    Weapon dagger("dagger", 5);
+    field.addItem(&dagger);
+
+    Potion red("red healing", 40);
+    dungeon.addItem(&red);
+
+    Treasure diamond("diamond", 60);
+    temple.addItem(&diamond);
+    Weapon sword("sword", 6);
+    temple.addItem(&sword);
+
+    Treasure gold("gold ring", 60);
+    castle.addItem(&gold);
+    Weapon stick("stick", 1);
+    castle.addItem(&stick);
+
+    Potion purple("purple healing", 30);
+    ruins.addItem(&purple);
+
+    Weapon club("club", 3);
+    clearing.addItem(&club);
+
+    Treasure chest("treasure chest", 200);
+    house.addItem(&chest);
+
+    Treasure coins("bag of coins", 50);
+    hall.addItem(&coins);
+    Potion blue("blue healing", 20);
+    hall.addItem(&blue);
+
+    Treasure ruby("ruby", 10);
+    garden.addItem(&ruby);
+    Weapon crossbow("crossbow", 10);
+    garden.addItem(&crossbow);
+
     // Create player
     Player player("Alice", 100);
     player.setCurrentLocation(&clearing);
@@ -95,6 +137,34 @@ int main() {
             } else {
                 std::cout << "Invalid direction! Please try again." << std::endl;
             }
+        } else if (command == "collect") {
+            // Add the items to the player's inventory
+            Location *currentLocation = player.getCurrentLocation();
+            for (auto &potion: currentLocation->getPotions()) {
+                player.addPotion(potion);
+                player.setScore(player.getScore() + potion->getStrength());
+            }
+            currentLocation->clearPotion();
+
+            for (auto &weapon: currentLocation->getWeapons()) {
+                player.addWeapon(weapon);
+                player.setScore(player.getScore() + weapon->getPower());
+            }
+            currentLocation->clearWeapon();
+
+            for (auto &treasure: currentLocation->getTreasures()) {
+                player.addTreasure(treasure);
+                player.setScore(player.getScore() + treasure->getValue());
+            }
+            currentLocation->clearTreasure();
+        } else if (command == "inventory" || command == "inv") {
+            player.displayItems();
+        }
+        else if (command == "drink") {
+            for (auto &potion: player.getPotions()) {
+                player.setHitPoints(player.getHitPoints() + potion->getStrength());
+            }
+            player.clearPotions();
         } else {
             std::cout << "Invalid direction! Please try again.." << std::endl;
         }
@@ -102,7 +172,5 @@ int main() {
         DescribeLocation(player);
         DescribeExits(player);
     }
-
-
     std::cout << "Locations have been created." << std::endl;
 }

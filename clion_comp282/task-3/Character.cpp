@@ -66,3 +66,44 @@ void Player::setCurrentLocation(Location *newLocation) {
 Location *Player::getCurrentLocation() {
     return currentLocation;
 }
+
+void Player::addWeapon(Weapon* weapon) {
+    weapons.push_back(weapon);
+}
+void Player::addPotion(Potion* potion) {
+    potions.push_back(potion);
+}
+void Player::addTreasure(Treasure* treasure) {
+    treasures.push_back(treasure);
+}
+
+void Player::displayItems() const {
+    // todo sort weapons, potions, treasures
+    
+    std::cout << "Weapons: ";
+    for (auto weapon : weapons) {
+        std::cout << weapon->getName() << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Potions: ";
+    for (auto potion : potions) {
+        std::cout << potion->getName() << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "Treasures: ";
+    for (auto treasure : treasures) {
+        std::cout << treasure->getName() << " ";
+    }
+    std::cout << std::endl;
+}
+
+const std::vector<Potion*> Player::getPotions() {
+    return potions;
+}
+
+void Player::clearPotions() {
+    potions.clear();
+}
+

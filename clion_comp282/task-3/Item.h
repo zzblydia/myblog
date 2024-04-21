@@ -9,6 +9,7 @@ private:
     std::string name;
 
 public:
+    Item(std::string name);
     std::string getName() const;
     void setName(const std::string& newName);
 };
@@ -18,6 +19,7 @@ private:
     int strength;
 
 public:
+    Potion(std::string name, int strength);
     int getStrength() const;
     void setStrength(int newStrength);
 };
@@ -27,6 +29,7 @@ private:
     int power;
 
 public:
+    Weapon(std::string name, int power);
     int getPower() const;
     void setPower(int newPower);
 };
@@ -36,6 +39,7 @@ private:
     int value;
 
 public:
+    Treasure(std::string name, int value);
     int getValue() const;
     void setValue(int newValue);
 };

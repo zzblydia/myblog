@@ -12,11 +12,13 @@ class Location {
 private:
     std::string name;
     std::string description;
+
     std::vector<std::pair<char, Location*>> exits;
     std::vector<Monster*> monsters;
-    std::vector<Item*> weapons;
-    std::vector<Item*> potions;
-    std::vector<Item*> treasures;
+
+    std::vector<Weapon*> weapons;
+    std::vector<Potion*> potions;
+    std::vector<Treasure*> treasures;
 
 public:
     Location();
@@ -33,10 +35,18 @@ public:
     void addMonster(Monster* newMonster);
     void delMonster(Monster* monsterToDelete);
 
-    void addItem(Item* item);
     void addItem(Potion* potion);
     void addItem(Weapon* weapon);
     void addItem(Treasure* treasure);
+    void displayItems() const;
+
+    const std::vector<Weapon*> getWeapons() ;
+    const std::vector<Potion*> getPotions() ;
+    const std::vector<Treasure*> getTreasures() ;
+
+    void clearWeapon();
+    void clearPotion();
+    void clearTreasure();
 };
 
 #endif
