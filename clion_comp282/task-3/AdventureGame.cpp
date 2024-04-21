@@ -17,29 +17,29 @@ int main() {
     // Create locations
     Location cave, temple, dungeon, castle, clearing, hall, garden, library, forest, house, ruins, field;
 
-    cave.setName("Cave");
+    cave.setName("cave");
     cave.setDescription("You have entered a dark and mysterious cave.");
-    temple.setName("Temple");
+    temple.setName("temple");
     temple.setDescription("An ancient temple filled with mystical artifacts.");
-    dungeon.setName("Dungeon");
+    dungeon.setName("dungeon");
     dungeon.setDescription("A dark and dangerous dungeon lies ahead.");
-    castle.setName("Castle");
+    castle.setName("castle");
     castle.setDescription("A majestic castle with towering walls and hidden secrets.");
-    clearing.setName("Clearing");
+    clearing.setName("clearing");
     clearing.setDescription("A peaceful clearing in the midst of the forest.");
-    hall.setName("Hall");
+    hall.setName("hall");
     hall.setDescription("A grand hall with echoes of the past.");
-    garden.setName("Garden");
+    garden.setName("garden");
     garden.setDescription("A serene garden filled with colorful flowers.");
-    library.setName("Library");
+    library.setName("library");
     library.setDescription("A vast library with shelves of ancient books.");
-    forest.setName("Forest");
+    forest.setName("forest");
     forest.setDescription("You are surrounded by tall trees and chirping birds.");
-    house.setName("House");
+    house.setName("house");
     house.setDescription("A cozy house with a warm fireplace.");
-    ruins.setName("Ruins");
+    ruins.setName("ruins");
     ruins.setDescription("Decaying ruins of an ancient civilization.");
-    field.setName("Field");
+    field.setName("field");
     field.setDescription("An open field with a gentle breeze.");
 
     // create map
@@ -75,11 +75,12 @@ int main() {
     // Game logic goes here
     std::cout << "Welcome to the Adventure Game!" << std::endl;
     DescribeLocation(player);
+    DescribeExits(player);
 
     std::string command;
     while (true) {
         std::string command;
-        std::cout << "Enter a command (type 'quit' to exit): ";
+        std::cout << "Enter a direction to go (type 'quit' to exit): ";
         std::cin >> command;
 
         if (command == "quit") {
@@ -88,7 +89,14 @@ int main() {
             break;
         } else if (command == "E" || command == "W" || command == "N" || command == "S") {
             // 如果有合法的方向输入，移动到新的位置
-            /player.setCurrentLocation(player.getCurrentLocation()->getExit(command[0]));
+            Location *newLocation = player.getCurrentLocation()->getExit(command[0]);
+            if (newLocation != nullptr) {
+                player.setCurrentLocation(newLocation);
+            } else {
+                std::cout << "Invalid direction! Please try again." << std::endl;
+            }
+        } else {
+            std::cout << "Invalid direction! Please try again.." << std::endl;
         }
 
         DescribeLocation(player);

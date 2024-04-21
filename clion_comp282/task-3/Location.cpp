@@ -48,6 +48,15 @@ void Location::getExits() const {
     std::cout << std::endl;
 }
 
+Location* Location::getExit(char direction) {
+    for (const auto& pair : exits) {
+        if (pair.first == direction) {
+            return pair.second;
+        }
+    }
+    return nullptr;
+}
+
 void Location::addItem(Item* item) {
     // Code to add item to the location
 }

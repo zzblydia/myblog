@@ -29,6 +29,7 @@ public:
 
     void addExit(char direction, Location* destination);
     void getExits() const;
+    Location* getExit(char direction);
     void addMonster(Monster* newMonster);
     void delMonster(Monster* monsterToDelete);
 
