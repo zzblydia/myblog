@@ -1,4 +1,5 @@
 // Character.cpp
+#include <algorithm>
 #include "Character.h"
 
 // Default constructor
@@ -78,8 +79,22 @@ void Player::addTreasure(Treasure* treasure) {
 }
 
 void Player::displayItems() const {
-    // todo sort weapons, potions, treasures
-    
+    std::vector<std::string> weaponNames;
+    for (auto weapon : weapons) {
+        weaponNames.push_back(weapon->getName());
+    }
+    std::vector<std::string> potionNames;
+    for (auto potion : potions) {
+        potionNames.push_back(potion->getName());
+    }
+    std::vector<std::string> treasureNames;
+    for (auto treasure : treasures) {
+        treasureNames.push_back(treasure->getName());
+    }
+    std::sort(weaponNames.begin(), weaponNames.end());
+    std::sort(potionNames.begin(), potionNames.end());
+    std::sort(treasureNames.begin(), treasureNames.end());
+
     std::cout << "Weapons: ";
     for (auto weapon : weapons) {
         std::cout << weapon->getName() << " ";
@@ -87,19 +102,19 @@ void Player::displayItems() const {
     std::cout << std::endl;
 
     std::cout << "Potions: ";
-    for (auto potion : potions) {
-        std::cout << potion->getName() << " ";
+    for (auto potionName : potionNames) {
+        std::cout << potionName << " ";
     }
     std::cout << std::endl;
 
     std::cout << "Treasures: ";
-    for (auto treasure : treasures) {
-        std::cout << treasure->getName() << " ";
+    for (auto treasureName : treasureNames) {
+        std::cout << treasureName << " ";
     }
     std::cout << std::endl;
 }
 
-const std::vector<Potion*> Player::getPotions() {
+std::vector<Potion*> Player::getPotions() {
     return potions;
 }
 

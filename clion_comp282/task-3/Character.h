@@ -53,7 +53,7 @@ public:
     void displayItems() const;
 
     // 访问和清理
-    const std::vector<Potion*> getPotions();
+    std::vector<Potion*> getPotions();
     void clearPotions();
 };
 
