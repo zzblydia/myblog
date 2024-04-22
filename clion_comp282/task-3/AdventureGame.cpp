@@ -206,6 +206,32 @@ int main() {
             }
             player.clearPotions();
         } else if (command == "fight") {
+            // get the max hitpoints of the monsters in the location
+            int maxHitPoints = 0;
+            Character *strongestMonster = nullptr;
+            for (auto &monster: player.getCurrentLocation()->getMonsters()) {
+                if (monster->getHitPoints() > maxHitPoints) {
+                    maxHitPoints = monster->getHitPoints();
+                    strongestMonster = monster;
+                }
+            }
+            if (strongestMonster != nullptr) {
+                // fight the strongest monster
+                int ret = player.combat(strongestMonster);
+                // 如果击败boss
+                if (ret == 1 && strongestMonster->getName() == "boss") {
+                    std::cout << "boss over, Your final score is: " << player.getScore() << std::endl;
+                    std::cout << "Thanks for playing! Goodbye!" << std::endl;
+                    break;
+                } else if (ret == -1) {
+                    std::cout << "You have been defeated by the " << strongestMonster->getName() << "!" << std::endl;
+                    std::cout << "Your final score is: " << player.getScore() << std::endl;
+                    std::cout << "Thanks for playing! Goodbye!" << std::endl;
+                    break;
+                }
+            } else {
+                std::cout << "There are no monsters to fight!" << std::endl;
+            }
 
         } else {
             std::cout << "Invalid direction! Please try again.." << std::endl;

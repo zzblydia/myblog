@@ -282,6 +282,7 @@ will decrease the character’s hitpoints by the given amount.
 怪物对玩家造成的伤害由调用 rollDice 函数并将结果乘以2来确定（结果范围为0-12）。
 玩家的生命值总数减去怪物造成的伤害。
 玩家然后反击 - 调用 rollDice，并根据具有最高攻击力评级的武器进行修改。因此，如果玩家有一把攻击力为10的剑，那么10将被添加到骰子点数以确定对怪物造成的伤害。
+
 这个循环持续进行，直到玩家或敌人的生命值降至0。
 每轮战斗后，显示每个战斗者的生命值给用户看。
 如果房间中有多个怪物，则在用户输入 fight 时只与一个怪物进行战斗 - 用户需要再次输入以与另一个怪物战斗。怪物的顺序应该是从强到弱 - 所以玩家首先与生命值较高的怪物战斗。
@@ -298,11 +299,16 @@ Add further items to the game:
 Treasures: Cup, Pearl, Key, Book
 Potions: Green Healing Potion
 You can decide their value, and strength in the case of the healing potion.
-Put these items into the possession of some of the monsters. Make sure that the ghoul
-6
-has the key.
-Modify the game so that when a monster is defeated, their items become available in the
-room for the player to collect.
+Put these items into the possession of some of the monsters. Make sure that the ghoul has the key.
+Modify the game so that when a monster is defeated, their items become available in the room for the player to collect.
+
+任务8 - 游戏增强
+为游戏添加更多物品：
+宝藏：杯子、珍珠、钥匙、书籍
+药水：绿色治疗药水
+你可以决定它们的价值，以及治疗药水的效力。
+将这些物品放在一些怪物的物品中。确保食尸鬼拥有钥匙。
+修改游戏，使得当玩家击败怪物时，怪物的物品会在房间中变得可供玩家收集。
 
 ### 4.10 Task 9 - Implementing Armour  
 Create a new child class of Item called Armour.
@@ -316,7 +322,7 @@ be listed to the user when they type inv or inventory. Modify the combat rules s
 that during combat, damage inflicted on the player by an enemy is reduced by a random
 amount between 0 and the total value of protection of all the armour in the player’s
 possession.
-7
-5 Example Gameplay
-8
-9
+
+创建一个名为Armour的Item子类。
+在游戏中添加至少5个护甲的例子。一些例子包括：环甲、锁子甲、盾牌、胸甲、头盔、护手。
+除了名称和描述外，Armour类应该有一个名为protection的成员变量。你可以决定其值。但确保将护手（protection为2）放在图书馆中。护甲可以减少对角色造成的伤害。所有Character对象应该有使用护甲的能力，因此应该在Character（父类）级别实现。当玩家输入inv或inventory时，所有护甲物品应该列给用户看。修改战斗规则，使得在战斗中，敌人对玩家造成的伤害会减少一个随机数，该随机数的范围在0到玩家所有护甲的总保护值之间。

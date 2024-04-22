@@ -128,6 +128,8 @@ void Player::clearPotions() {
     potions.clear();
 }
 
+// 玩家被击败, 返回-1
+// 怪物被击败, 返回1
 int Player::combat(Character *character) {
     int maxWeaponPower = 0;
     for (auto weapon: weapons) {
@@ -159,7 +161,6 @@ int Player::combat(Character *character) {
         std::cout << "Player attacks! Monster hitpoints: " << monsterHitPoints << std::endl;
         // Check if monster is defeated
         if (monsterHitPoints <= 0) {
-            // Monster defeated, update score or other game logic
             return 1;
         }
     }
