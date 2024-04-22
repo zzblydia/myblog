@@ -34,6 +34,7 @@ public:
     Location* getExit(char direction);
     void addMonster(Monster* newMonster);
     void delMonster(Monster* monsterToDelete);
+    std::vector<Monster*> getMonsters() const;
 
     void addItem(Potion* potion);
     void addItem(Weapon* weapon);

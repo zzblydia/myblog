@@ -114,17 +114,51 @@ int main() {
     Player player("Alice", 100);
     player.setCurrentLocation(&clearing);
 
+    // add monster
+    Monster goblin("goblin", 10);
+    field.addMonster(&goblin);
+
+    Monster zombie("zombie", 8);
+    dungeon.addMonster(&zombie);
+
+    Monster banshee("banshee", 7);
+    forest.addMonster(&banshee);
+
+    Monster vampire("vampire", 9);
+    castle.addMonster(&vampire);
+
+    Monster dragon("dragon", 15);
+    ruins.addMonster(&dragon);
+
+    Monster orc("orc", 12);
+    house.addMonster(&orc);
+
+    Monster spectre("spectre", 5);
+    house.addMonster(&spectre);
+
+    Monster ghoul("ghoul", 10);
+    garden.addMonster(&ghoul);
+
+    std::vector<Location*> locations = {&cave, &temple, &dungeon, &castle, &clearing, &hall, &garden, &library, &forest, &house, &ruins, &field};
+
     // Game logic goes here
     std::cout << "Welcome to the Adventure Game!" << std::endl;
-    DescribeLocation(player);
-    DescribeExits(player);
 
     std::string command;
     while (true) {
+        DescribeLocation(player);
+        DescribeExits(player);
+        std::cout << "There are monsters in rooms:" << std::endl;
+        for (auto &location: locations) {
+            for(auto &monster: location->getMonsters()) {
+                std::cout << "You have encountered a " << monster->getName() << "!" << std::endl;
+                std::cout << "You have defeated the " << monster->getName() << "!" << std::endl;
+            }
+        }
+
         std::string command;
         std::cout << "Enter a direction to go (type 'quit' to exit): ";
         std::cin >> command;
-
         if (command == "quit") {
             std::cout << "Your final score is: " << player.getScore() << std::endl;
             std::cout << "Thanks for playing! Goodbye!" << std::endl;
@@ -168,9 +202,6 @@ int main() {
         } else {
             std::cout << "Invalid direction! Please try again.." << std::endl;
         }
-
-        DescribeLocation(player);
-        DescribeExits(player);
     }
     std::cout << "Locations have been created." << std::endl;
 }

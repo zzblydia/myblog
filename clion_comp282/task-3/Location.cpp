@@ -114,3 +114,7 @@ void Location::clearPotion() {
 void Location::clearTreasure() {
     treasures.clear();
 }
+
+std::vector<Monster *> Location::getMonsters() const {
+    return monsters;
+}
