@@ -7,14 +7,14 @@
 #include "Item.h"
 #include "Character.h"
 
-class Monster;
+class Character;
 class Location {
 private:
     std::string name;
     std::string description;
 
     std::vector<std::pair<char, Location*>> exits;
-    std::vector<Monster*> monsters;
+    std::vector<Character*> monsters;
 
     std::vector<Weapon*> weapons;
     std::vector<Potion*> potions;
@@ -32,9 +32,9 @@ public:
     void addExit(char direction, Location* destination);
     void getExits() const;
     Location* getExit(char direction);
-    void addMonster(Monster* newMonster);
-    void delMonster(Monster* monsterToDelete);
-    std::vector<Monster*> getMonsters() const;
+    void addMonster(Character* newMonster);
+    void delMonster(Character* monsterToDelete);
+    std::vector<Character*> getMonsters() const;
 
     void addItem(Potion* potion);
     void addItem(Weapon* weapon);

@@ -139,7 +139,14 @@ int main() {
     Monster ghoul("ghoul", 10);
     garden.addMonster(&ghoul);
 
-    std::vector<Location*> locations = {&cave, &temple, &dungeon, &castle, &clearing, &hall, &garden, &library, &forest, &house, &ruins, &field};
+    // create boss
+    Player boss("Boss", 100);
+    cave.addMonster(&boss);
+
+    std::vector<Location *> locations = {&cave, &temple, &dungeon, &castle, &clearing, &hall, &garden, &library,
+                                         &forest, &house, &ruins, &field};
+
+
 
     // Game logic goes here
     std::cout << "Welcome to the Adventure Game!" << std::endl;
@@ -150,7 +157,7 @@ int main() {
         DescribeExits(player);
         std::cout << "There are monsters in rooms:" << std::endl;
         for (auto &location: locations) {
-            for(auto &monster: location->getMonsters()) {
+            for (auto &monster: location->getMonsters()) {
                 std::cout << "You have encountered a " << monster->getName() << "!" << std::endl;
                 std::cout << "You have defeated the " << monster->getName() << "!" << std::endl;
             }
@@ -193,12 +200,13 @@ int main() {
             currentLocation->clearTreasure();
         } else if (command == "inventory" || command == "inv") {
             player.displayItems();
-        }
-        else if (command == "drink") {
+        } else if (command == "drink") {
             for (auto &potion: player.getPotions()) {
                 player.setHitPoints(player.getHitPoints() + potion->getStrength());
             }
             player.clearPotions();
+        } else if (command == "fight") {
+
         } else {
             std::cout << "Invalid direction! Please try again.." << std::endl;
         }

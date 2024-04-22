@@ -55,6 +55,11 @@ public:
     // 访问和清理
     std::vector<Potion*> getPotions();
     void clearPotions();
+
+    int combat(Character *character);
+    void takeHit(int damage);
+
+
 };
 
 #endif

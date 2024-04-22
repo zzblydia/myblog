@@ -37,11 +37,11 @@ void Location::addExit(char direction, Location *destination) {
     exits.push_back(std::make_pair(direction, destination));
 }
 
-void Location::addMonster(Monster *newMonster) {
+void Location::addMonster(Character *newMonster) {
     monsters.push_back(newMonster);
 }
 
-void Location::delMonster(Monster *monsterToDelete) {
+void Location::delMonster(Character *monsterToDelete) {
     // Code to delete the specified monster from the monsters vector
 }
 
@@ -115,6 +115,6 @@ void Location::clearTreasure() {
     treasures.clear();
 }
 
-std::vector<Monster *> Location::getMonsters() const {
+std::vector<Character *> Location::getMonsters() const {
     return monsters;
 }

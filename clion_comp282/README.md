@@ -75,7 +75,7 @@ The assignment is organised into tasks.
 
 
 
-4.2 Task 1 - create game classes
+### 4.2 Task 1 - create game classes  
 The following classes should be written:
 • Character The Character class defines characters in the game. 
 It should have the following methods: setName, getName which will get or set the name of the
@@ -123,7 +123,7 @@ And exits, which holds the exits leading to other location objects.
 出口存放通往其他位置对象的出口。
 
 
-4.2.1 File Structure
+#### 4.2.1 File Structure 
 The File Structure should be according to good C++ practice, with declarations in the .h
 files and implementations in the .cpp files. 
 However for simple one or two line functions, those implementations can be kept in the .h file, allowing the compiler to inline them and
@@ -140,7 +140,7 @@ Files are:
 • AdventureGame.cpp
 
 
-4.3 Task 2 - Build the game world
+### 4.3 Task 2 - Build the game world  
 Build the game by creating location objects and linking them together using the objects’ exits member variable. 
 Create 12 location objects that are linked to each other according to the map shown.
 Here are the location names:
@@ -174,7 +174,7 @@ quit, the game should display the user’s score (which at this stage will be 0)
 
 
 
-4.4 Task 3 - Room Navigation
+### 4.4 Task 3 - Room Navigation  
 Modify the game loop so that it now tells the user where they are, and what exits are
 available (N, S, E or W).
 If the user types a direction (N, S, E or W, or North, South, East or West, or n,s,e
@@ -197,7 +197,7 @@ the game if necessary.
 
 
 
-4.5 Task 4 - Adding Items
+### 4.5 Task 4 - Adding Items
 Create some items (see below).
 Treasures: bag of coins, treasure chest, emerald, ruby, sapphire, diamond, gold ring.
 Potions: Blue Healing Potion, Purple Healing Potion, Red Healing Potion.
@@ -215,7 +215,20 @@ types drink, all the healing potions in the user’s inventory should be deleted
 ‘strength’ points should be added to the player’s HitPoints.
 By the end of this task the user should be able to collect all items from rooms, drink the
 healing potions, and list the items in the inventory.
-4.6 Task 5 - Adding Monsters
+
+创建一些物品：
+宝藏：一袋硬币、宝箱、翡翠、红宝石、蓝宝石、钻石、金戒指。
+药水：蓝色治疗药水、紫色治疗药水、红色治疗药水。
+武器：匕首、剑、弩、棍棒、手杖。
+
+使用addItem函数将这些物品（武器、药水、宝藏）添加到游戏中的位置，如下所示：
+
+修改游戏循环，以便宣布当前位置有哪些物品（如果有的话）。玩家应该能够从当前位置获取这些信息。如果玩家输入collect，那么该位置的所有物品应该被玩家收集。如果玩家输入inv或inventory，则应该看到他们所有物品的列表，分为三组（药水、宝藏、武器），并按字母顺序排序。如果玩家输入drink，则应删除玩家库存中的所有治疗药水，并将它们的“力量”点数添加到玩家的生命值HitPoints中。
+
+通过这个任务的最后，玩家应该能够从房间中收集所有物品，喝下治疗药水，以及列出库存中的物品。
+
+
+### 4.6 Task 5 - Adding Monsters  
 Use addMonster to add monsters to the rooms.
 Here are the monster names:
 vampire, zombie, dragon, goblin, spectre, banshee, ghoul, orc.
@@ -223,8 +236,17 @@ Arrange the monsters in the game as follows, with the following hitpoint values:
 Change the game loop so that it announces the presence of a monster in a room.
 Note that the house has two monsters.
 By the end of this task there should be monsters in locations.
-5
-4.7 Task 6 - Combat
+
+使用 addMonster 为房间添加怪物。
+以下是怪物名称：
+吸血鬼、僵尸、龙、妖精、幽灵、女妖、食尸鬼、兽人。
+在游戏中将怪物排列如下，命中点数值如下：
+更改游戏循环，使其宣布房间里出现了怪物。
+注意，房子里有两个怪物。
+任务结束时，各个地点都应该有怪物。
+
+
+### 4.7 Task 6 - Combat
 By the end of this task it should be possible to engage in combat with the monsters/enemies
 according to the rules of combat, by typing fight.
 Create a function called rollDice which will return a random integer from 1-6.
@@ -249,11 +271,29 @@ the monster with the higher hitpoints first.
 9. The Character class should have the member function takeHit added to it, which
 will decrease the character’s hitpoints by the given amount.
 10. If the player is defeated, the player’s score is shown and the game ends.
-4.8 Task 7 - The Boss
+
+
+为了实现与怪物/敌人进行战斗的功能，您可以按照以下步骤进行操作：
+
+创建一个名为 rollDice 的函数，用于返回一个1到6之间的随机整数。
+在 Player 类中创建一个名为 combat 的成员函数，用于在当前位置与怪物进行战斗。战斗规则如下：
+怪物和玩家都有生命值（hitpoint value）。一旦一个角色的生命值降至0，该角色被击败。
+怪物先攻击玩家。
+怪物对玩家造成的伤害由调用 rollDice 函数并将结果乘以2来确定（结果范围为0-12）。
+玩家的生命值总数减去怪物造成的伤害。
+玩家然后反击 - 调用 rollDice，并根据具有最高攻击力评级的武器进行修改。因此，如果玩家有一把攻击力为10的剑，那么10将被添加到骰子点数以确定对怪物造成的伤害。
+这个循环持续进行，直到玩家或敌人的生命值降至0。
+每轮战斗后，显示每个战斗者的生命值给用户看。
+如果房间中有多个怪物，则在用户输入 fight 时只与一个怪物进行战斗 - 用户需要再次输入以与另一个怪物战斗。怪物的顺序应该是从强到弱 - 所以玩家首先与生命值较高的怪物战斗。
+在 Character 类中添加一个名为 takeHit 的成员函数，用于减少角色的生命值。
+如果玩家被击败，显示玩家的分数并结束游戏。
+
+### 4.8 Task 7 - The Boss  
 Create a new Player character called ‘boss’, give it a name and description, and add the
 boss to the game. Put the boss in the cave. Modify the game loop so that when the
 boss is defeated, the game ends.
-4.9 Task 8 - Game Enhancements
+
+### 4.9 Task 8 - Game Enhancements  
 Add further items to the game:
 Treasures: Cup, Pearl, Key, Book
 Potions: Green Healing Potion
@@ -263,7 +303,8 @@ Put these items into the possession of some of the monsters. Make sure that the 
 has the key.
 Modify the game so that when a monster is defeated, their items become available in the
 room for the player to collect.
-4.10 Task 9 - Implementing Armour
+
+### 4.10 Task 9 - Implementing Armour  
 Create a new child class of Item called Armour.
 Add at least 5 examples of armour into the game. Some examples:
 ringmail, chainmail, shield, breastplate, helmet, gauntlet.
