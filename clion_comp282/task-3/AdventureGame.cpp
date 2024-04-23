@@ -2,6 +2,30 @@
 #include "Location.h"
 #include "Character.h"
 
+void Welcome(Player &player, std::vector<Location *> &locations) {
+    // Function to welcome the player
+    std::cout << "Welcome to the Adventure Game!" << std::endl;
+    std::cout << "You are " << player.getName() << ", a brave adventurer." << std::endl;
+    std::cout << "Your current location is: " << player.getCurrentLocation()->getName() << std::endl;
+    std::cout << "Your current hit points are: " << player.getHitPoints() << std::endl;
+    std::cout << "Your current score is: " << player.getScore() << std::endl;
+    std::cout << "Your inventory is empty." << std::endl;
+    std::cout << "Your available commands are: " << std::endl;
+    std::cout << "1. Enter a direction to go (E, W, N, S)" << std::endl;
+    std::cout << "2. Collect items" << std::endl;
+    std::cout << "3. Display inventory" << std::endl;
+    std::cout << "4. Drink potions" << std::endl;
+    std::cout << "5. Fight monsters" << std::endl;
+    std::cout << "6. Quit the game" << std::endl;
+    std::cout << "Good luck!" << std::endl;
+    std::cout << "There are monsters in rooms:" << std::endl;
+    for (auto &location: locations) {
+        for (auto &monster: location->getMonsters()) {
+            std::cout << "You have encountered a " << monster->getName() << "!" << std::endl;
+        }
+    }
+}
+
 void DescribeLocation(Player &player) {
     // Function to describe the current location
     std::cout << "Your current location is: " << player.getCurrentLocation()->getName() << std::endl;
@@ -111,7 +135,8 @@ int main() {
     garden.addItem(&crossbow);
 
     // Create player
-    Player player("Alice", 100);
+    Player player("Alice", 1000);
+    std::cout << "Player name: " << player.getName() << std::endl;
     player.setCurrentLocation(&clearing);
 
     // add monster
@@ -145,7 +170,6 @@ int main() {
 
     std::vector<Location *> locations = {&cave, &temple, &dungeon, &castle, &clearing, &hall, &garden, &library,
                                          &forest, &house, &ruins, &field};
-
     // Game Enhancements
     Potion green("green healing", 10);
     goblin.addPotion(&green);
@@ -159,7 +183,7 @@ int main() {
     vampire.addTreasure(&Book);
 
     // Game logic goes here
-    std::cout << "Welcome to the Adventure Game!" << std::endl;
+    Welcome(player, locations);
 
     std::string command;
     while (true) {
@@ -173,7 +197,6 @@ int main() {
             }
         }
 
-        std::string command;
         std::cout << "Enter a direction to go (type 'quit' to exit): ";
         std::cin >> command;
         if (command == "quit") {

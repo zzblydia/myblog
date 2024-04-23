@@ -2,12 +2,6 @@
 #include <algorithm>
 #include "Character.h"
 
-// Default constructor
-Character::Character() {
-    name = "";
-    hitPoints = 100;
-}
-
 // Parameterized constructor
 Character::Character(std::string name, int hitPoints) {
     this->name = name;
@@ -39,12 +33,7 @@ std::vector<armour *> Character::getArmours() const {
 }
 
 // Implement Monster class methods
-Monster::Monster() {
-    Character();
-}
-
-Monster::Monster(std::string name, int hitPoints) {
-    Character(name, hitPoints);
+Monster::Monster(std::string name, int hitPoints) : Character(name, hitPoints){
 }
 
 void Monster::addTreasure(Treasure *treasure) {
@@ -60,14 +49,7 @@ int rollDice() {
 }
 
 // Implement Player class methods
-Player::Player() {
-    Character();
-    score = 0;
-    currentLocation = nullptr;
-}
-
-Player::Player(std::string name, int hitPoints) {
-    Character(name, hitPoints);
+Player::Player(std::string name, int hitPoints) : Character(name, hitPoints) {
     score = 0;
     currentLocation = nullptr;
 }
