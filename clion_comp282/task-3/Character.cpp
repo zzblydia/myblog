@@ -6,7 +6,6 @@
 Character::Character(std::string name, int hitPoints) {
     this->name = name;
     this->hitPoints = hitPoints;
-    this->protection = 0;
 }
 
 void Character::setName(const std::string &newName) {
@@ -25,8 +24,36 @@ int Character::getHitPoints() const {
     return hitPoints;
 }
 
-void Character::takeHit(int damage) {
-    hitPoints -= damage;
+int Character::getProtections() const {
+    int totalProtection = 0;
+    for (auto armour: armours) {
+        totalProtection += armour->getProtection();
+    }
+    return totalProtection;
+}
+
+void Character::addTreasure(Treasure *treasure) {
+    treasures.push_back(treasure);
+}
+
+std::vector<Treasure *> Character::getTreasures() {
+    return treasures;
+}
+
+void Character::clearTreasures() {
+    treasures.clear();
+}
+
+void Character::addPotion(Potion *potion) {
+    potions.push_back(potion);
+}
+
+std::vector<Potion *> Character::getPotions() {
+    return potions;
+}
+
+void Character::clearPotions() {
+    potions.clear();
 }
 
 void Character::addArmour(Armour *armour) {
@@ -37,28 +64,20 @@ std::vector<Armour *> Character::getArmours() const {
     return armours;
 }
 
-int Character::getProtection() const {
-    int totalProtection = 0;
-    for (auto armour: armours) {
-        totalProtection += armour->getProtection();
-    }
-    return totalProtection;
+void Character::clearArmours() {
+    armours.clear();
+}
+
+void Character::takeHit(int damage) {
+    hitPoints -= damage;
 }
 
 // Implement Monster class methods
 Monster::Monster(std::string name, int hitPoints) : Character(name, hitPoints) {
 }
 
-void Monster::addTreasure(Treasure *treasure) {
-    treasures.push_back(treasure);
-}
-
-void Monster::addPotion(Potion *potion) {
-    potions.push_back(potion);
-}
-
-int rollDice() {
-    return rand() % 6 + 1; // Generate a random number between 1 and 6
+int rollDice(int num) {
+    return rand() % num + 1; // Generate a random number between 1 and num
 }
 
 // Implement Player class methods
@@ -87,23 +106,19 @@ void Player::addWeapon(Weapon *weapon) {
     weapons.push_back(weapon);
 }
 
-void Player::addPotion(Potion *potion) {
-    potions.push_back(potion);
-}
-
-void Player::addTreasure(Treasure *treasure) {
-    treasures.push_back(treasure);
+void Player::clearWeapons() {
+    weapons.clear();
 }
 
 bool compareByName(Item *a, Item *b) {
     return a->getName() < b->getName();
 }
 
-void Player::displayItems() const {
+void Player::displayItems() {
     cout << "You have the following items:" << std::endl;
     cout << "===================================" << std::endl;
     cout << " Score: " << score << " Health: " << getHitPoints() << std::endl;
-    cout << " Total Armour Protection: " << getProtection() << std::endl;
+    cout << " Total Armour Protection: " << getProtections() << std::endl;
 
     std::vector<Weapon *> displayWeapons = weapons;
     std::sort(displayWeapons.begin(), displayWeapons.end(), compareByName);
@@ -112,10 +127,10 @@ void Player::displayItems() const {
         cout << " " << weapon->getName() << " (" << weapon->getPower() << ")" << std::endl;
     }
 
-    std::vector<Potion *> displayPotions = potions;
+    std::vector<Potion *> displayPotions = getPotions();
     std::sort(displayPotions.begin(), displayPotions.end(), compareByName);
     cout << "Potions: " << std::endl;
-    if (displayPotions.size()) {
+    if (!displayPotions.empty()) {
         for (auto potion: displayPotions) {
             cout << " " << potion->getName() << " (" << potion->getStrength() << ")" << std::endl;
         }
@@ -123,10 +138,10 @@ void Player::displayItems() const {
         cout << " none." << std::endl;
     }
 
-    std::vector<Treasure *> displayTreasures = treasures;
+    std::vector<Treasure *> displayTreasures = getTreasures();
     std::sort(displayTreasures.begin(), displayTreasures.end(), compareByName);
     cout << "Treasures: " << std::endl;
-    if (displayTreasures.size()) {
+    if (!displayTreasures.empty()) {
         for (auto treasure: displayTreasures) {
             cout << " " << treasure->getName() << " (" << treasure->getValue() << ")" << std::endl;
         }
@@ -137,21 +152,13 @@ void Player::displayItems() const {
     std::vector<Armour *> displayArmours = getArmours();
     std::sort(displayArmours.begin(), displayArmours.end(), compareByName);
     cout << "Armours: " << std::endl;
-    if (displayArmours.size()) {
+    if (!displayArmours.empty()) {
         for (auto armour: displayArmours) {
             cout << " " << armour->getName() << " (" << armour->getProtection() << ")" << std::endl;
         }
     } else {
         cout << " none." << std::endl;
     }
-}
-
-std::vector<Potion *> Player::getPotions() {
-    return potions;
-}
-
-void Player::clearPotions() {
-    potions.clear();
 }
 
 // 玩家被击败, 返回-1
@@ -169,6 +176,9 @@ int Player::combat(Character *character) {
         }
     }
 
+    // 计算玩家护甲
+    int totalProtection = getProtections();
+
     int round = 0;
     while (getHitPoints() > 0 && character->getHitPoints() > 0) {
         round++;
@@ -178,9 +188,13 @@ int Player::combat(Character *character) {
         fout << "monster hitPoints: " << character->getHitPoints() << std::endl;
 
         // Monster attacks first
-        int monsterDamage = rollDice() * 2;
+        int monsterDamage = rollDice(6) * 2;
+        int protection = rollDice(totalProtection); // 护甲不会被消耗
         fout << "monsterDamage: " << monsterDamage << std::endl;
-        takeHit(monsterDamage);
+        fout << "protection: " << protection << std::endl;
+        if (monsterDamage > protection) {
+            takeHit(monsterDamage - protection);
+        }
 
         if (getHitPoints() <= 0) {
             cout << getHitPoints() << " " << character->getHitPoints() << std::endl;
@@ -188,15 +202,12 @@ int Player::combat(Character *character) {
         }
 
         // Player strikes back
-        int playerDamage = rollDice() + maxWeaponPower;
+        int playerDamage = rollDice(6) + maxWeaponPower;
         fout << "playerDamage: " << playerDamage << std::endl;
-
-        // Apply player's damage to the monster
-        int monsterHitPoints = character->getHitPoints() - playerDamage;
-        character->setHitPoints(monsterHitPoints);
+        character->takeHit(playerDamage);
 
         // Check if monster is defeated
-        if (monsterHitPoints <= 0) {
+        if (character->getHitPoints() <= 0) {
             cout << getHitPoints() << " " << character->getHitPoints() << std::endl;
             return 1;
         }

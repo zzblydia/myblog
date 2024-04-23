@@ -19,6 +19,7 @@ private:
     std::vector<Weapon*> weapons;
     std::vector<Potion*> potions;
     std::vector<Treasure*> treasures;
+    std::vector<Armour*> armours;
 
 public:
     Location();
@@ -39,14 +40,16 @@ public:
     void addItem(Potion* potion);
     void addItem(Weapon* weapon);
     void addItem(Treasure* treasure);
-    void displayItems() const;
+    void addItem(Armour* armour);
     void delItem(Weapon* weaponToDelete);
     void delItem(Potion* potionToDelete);
     void delItem(Treasure* treasureToDelete);
+    void delItem(Armour* armourToDelete);
 
     std::vector<Weapon*> getWeapons() ;
     std::vector<Potion*> getPotions() ;
     std::vector<Treasure*> getTreasures() ;
+    std::vector<Armour*> getArmours() ;
 };
 
 #endif

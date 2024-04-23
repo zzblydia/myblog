@@ -46,6 +46,10 @@ void Location::delMonster(Character *monsterToDelete) {
     monsters.erase(std::remove(monsters.begin(), monsters.end(), monsterToDelete), monsters.end());
 }
 
+std::vector<Character *> Location::getMonsters() const {
+    return monsters;
+}
+
 void Location::getExits() const {
     // Code to display list of exits to the player
     for (size_t i = 0; i < exits.size(); ++i) {
@@ -80,6 +84,10 @@ void Location::addItem(Treasure *treasure) {
     treasures.push_back(treasure);
 }
 
+void Location::addItem(Armour *armour) {
+    armours.push_back(armour);
+}
+
 void Location::delItem(Weapon *weaponToDelete) {
     // Code to delete the specified weapon from the weapons vector
     weapons.erase(std::remove(weapons.begin(), weapons.end(), weaponToDelete), weapons.end());
@@ -94,22 +102,10 @@ void Location::delItem(Treasure *treasureToDelete) {
     // Code to delete the specified treasure from the treasures vector
     treasures.erase(std::remove(treasures.begin(), treasures.end(), treasureToDelete), treasures.end());
 }
-void Location::displayItems() const {
-    // Code to display items in the location
-    if (weapons.size() == 0 && potions.size() == 0 && treasures.size() == 0) {
-        return;
-    } else {
-        cout << "Items in location " << getName() << ": " << std::endl;
-        for (const auto &potion: potions) {
-            cout << "Potion: " << potion->getName() << std::endl;
-        }
-        for (const auto &treasure: treasures) {
-            cout << "Treasure: " << treasure->getName() << std::endl;
-        }
-        for (const auto &weapon: weapons) {
-            cout << "Weapon: " << weapon->getName() << std::endl;
-        }
-    }
+
+void Location::delItem(Armour *armourToDelete) {
+    // Code to delete the specified armour from the armours vector
+    armours.erase(std::remove(armours.begin(), armours.end(), armourToDelete), armours.end());
 }
 
 std::vector<Weapon *> Location::getWeapons() {
@@ -124,6 +120,6 @@ std::vector<Treasure *> Location::getTreasures() {
     return treasures;
 }
 
-std::vector<Character *> Location::getMonsters() const {
-    return monsters;
+std::vector<Armour *> Location::getArmours() {
+    return armours;
 }

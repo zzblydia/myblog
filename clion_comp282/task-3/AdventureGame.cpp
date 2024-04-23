@@ -45,10 +45,14 @@ void DescribeLocationItems(Location *location) {
     int monsterCount = location->getMonsters().size();
     if (monsterCount == 1) {
         cout << "the " << location->getMonsters()[0]->getName() << " is here." << std::endl;
+        fout << "the monster " << location->getMonsters()[0]->getName() << "("
+             << location->getMonsters()[0]->getHitPoints() << ")" << std::endl;
     } else if (monsterCount > 1) {
         cout << "the ";
         for (int count = 0; count < monsterCount; count++) {
             cout << location->getMonsters()[count]->getName();
+            fout << "the monster " << location->getMonsters()[count]->getName() << "("
+                 << location->getMonsters()[count]->getHitPoints() << ")" << std::endl;
             if (count < monsterCount - 1) {
                 cout << ", ";
             } else {
@@ -126,6 +130,13 @@ void collect(Player &player) {
         cout << "You collected the " << treasure->getName() << "." << std::endl;
         currentLocation->delItem(treasure);
     }
+
+    std::vector<Armour *> armours = currentLocation->getArmours();
+    for (auto &armour: armours) {
+        player.addArmour(armour);
+        cout << "You collected the " << armour->getName() << "." << std::endl;
+        currentLocation->delItem(armour);
+    }
 }
 
 void fight(Player &player) {
@@ -146,14 +157,37 @@ void fight(Player &player) {
 
     int ret = player.combat(strongestMonster);
     if (ret == 1) {
-        // 如果击败boss
+        player.setScore(player.getScore() + 100); // 打败一个怪物加100分
+
+        // 获取怪物的宝藏
+        std::vector<Treasure *> monsterTreasures = strongestMonster->getTreasures();
+        for (auto monsterTreasure: monsterTreasures) {
+            player.addTreasure(monsterTreasure);
+        }
+        strongestMonster->clearTreasures();
+
+        // 获取怪物的药水
+        std::vector<Potion *> monsterPotions = strongestMonster->getPotions();
+        for (auto monsterPotion: monsterPotions) {
+            player.addPotion(monsterPotion);
+        }
+        strongestMonster->clearPotions();
+
+        // 获取怪物的护甲
+        std::vector<Armour *> monsterArmours = strongestMonster->getArmours();
+        for (auto monsterArmour: monsterArmours) {
+            player.addArmour(monsterArmour);
+        }
+        strongestMonster->clearArmours();
+
         if (strongestMonster->getName() == "boss") {
+            // 如果击败boss, 退出游戏 // todo 未说明是否获取boss weapons
             cout << "You have beaten the boss" << std::endl;
             cout << "Your final score is: " << player.getScore() << std::endl;
             cout << "Thanks for playing! Goodbye!" << std::endl;
             exit(0);
         } else {
-            // 击败普通怪物, 没有看到要得分, 从当前位置删除怪物
+            // 击败普通怪物, 从当前位置删除怪物
             cout << "You have beaten the " << strongestMonster->getName() << std::endl;
             player.getCurrentLocation()->delMonster(strongestMonster);
         }
@@ -300,7 +334,8 @@ int main() {
 
     std::vector<Location *> locations = {&cave, &temple, &dungeon, &castle, &clearing, &hall, &garden, &library,
                                          &forest, &house, &ruins, &field};
-    // Game Enhancements
+
+    // Game Enhancements 给怪物增加药水和宝藏
     Potion green("green healing", 10);
     goblin.addPotion(&green);
     Treasure cup("cup", 20);
@@ -311,6 +346,26 @@ int main() {
     ghoul.addTreasure(&Key);
     Treasure Book("book", 50);
     vampire.addTreasure(&Book);
+
+    // define Armour class object
+    Armour ringmail("ring mail", 5);
+    Armour chainmail("chainmail", 10);
+    Armour shield("shield", 15);
+    Armour breastplate("breastplate", 20);
+    Armour helmet("helmet", 25);
+    Armour gauntlet("gauntlet", 30);
+
+    // add armour to player
+    player.addArmour(&ringmail);
+
+    // add armour to monsters
+    goblin.addArmour(&chainmail);
+    zombie.addArmour(&shield);
+    banshee.addArmour(&breastplate);
+    ghoul.addArmour(&helmet);
+
+    // add armour to location
+    library.addItem(&gauntlet);
 
     // Game logic goes here
     Welcome(player, locations);
@@ -328,7 +383,9 @@ int main() {
             cout << "Your final score is: " << player.getScore() << std::endl;
             cout << "Thanks for playing! Goodbye!" << std::endl;
             break;
-        } else if (command == "e" || command == "w" || command == "n" || command == "s") {
+        } else if (command == "e" || command == "w" || command == "n" || command == "s" || command == "E" ||
+                   command == "W" || command == "N" || command == "S" || command == "East" || command == "West" ||
+                   command == "North" || command == "South") {
             // 如果有合法的方向输入，移动到新的位置
             char commandChar = std::toupper(command[0]);
             Location *newLocation = player.getCurrentLocation()->getExit(commandChar);

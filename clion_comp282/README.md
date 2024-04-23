@@ -7,8 +7,10 @@ Assignment CA1 : C++ Console Application
 Monday 29th of April at 17:00
 Feedback will be released on Monday the 20th of May (3 wks later).
 
+
 ## 2 Weighting  
 50%
+
 
 ## 3 Overview  
 You will create a small interactive console-based (i.e. text based) adventure game. The
@@ -22,15 +24,12 @@ assignment that I may have missed, or if you feel something is unclear, please c
 (andyrox@liverpool.ac.uk) or post a question in the Canvas COMP282 Discussion page
 (there is a specific discussion relating to clarification of the assignments).
 
-您将制作一款基于控制台（即基于文本）的小型互动冒险游戏。该
-项目包括 9 项任务。您需要使用 Visual Studio 2022 Community
-版来构建您的游戏。您应按顺序完成任务，因为有些任务
-假定前面的任务已经完成。每个任务都建立在前一个任务的基础上。
-尽可能多地完成任务，然后打包提交项目。您的解决方案
-应展示您的 C++ 知识。单独完成： 您必须独自完成
-作业。我们将进行抄袭检查。如果您发现作业中有任何我可能遗漏的错字或错误
-如果您发现作业中有我可能遗漏的错字或错误，或者您觉得有不清楚的地方，请联系我 ()
-(andyrox@liverpool.ac.uk)，或在 Canvas COMP282 讨论页面上提出问题。
+您将制作一款基于控制台（即基于文本）的小型互动冒险游戏。该项目包括 9 项任务。
+您需要使用 Visual Studio 2022 Community版来构建您的游戏。
+您应按顺序完成任务，因为有些任务假定前面的任务已经完成。每个任务都建立在前一个任务的基础上。
+尽可能多地完成任务，然后打包提交项目。您的解决方案应展示您的 C++ 知识。
+单独完成： 您必须独自完成作业。我们将进行抄袭检查。如果您发现作业中有任何我可能遗漏的错字或错误
+如果您发现作业中有我可能遗漏的错字或错误，或者您觉得有不清楚的地方，请联系我 ()(andyrox@liverpool.ac.uk)，或在 Canvas COMP282 讨论页面上提出问题。
 (有关于作业澄清的专门讨论）。
 
 
@@ -43,14 +42,12 @@ and manually reviewing the code.
 提交要求  
 我将在 Canvas 上传一份单独的文档，说明提交作业的要求。
 您可能会将 cpp 和 h 文件上传到 Codegrade。我还将上传一份
-说明评分标准。评分将结合运行自动测试
-和人工审核代码相结合。
+说明评分标准。评分将结合运行自动测试和人工审核代码相结合。
 
 ### 4.1 Overview: Fantasy Quest Adventure Game  
 The assignment is to create a basic command-line game using C++ and organise game
 structure using OOP methods.
 The game has a fantasy theme, in a style similar to Dungeons and Dragons, consisting
-1
 of a player that can navigate a series of connected locations (using commands North,
 South, East, West or N,S,E,W). The player can collect items and engage in combat with
 monsters. The player’s score in the game increases when they defeat a monster. The
@@ -73,17 +70,21 @@ The assignment is organised into tasks.
 
 概述： 奇幻探险游戏 任务是使用 C++ 创建一个基本的命令行游戏，并使用 OOP 方法组织游戏结构。
 游戏以奇幻为主题，风格类似于《龙与地下城》，由一个玩家组成，玩家可以浏览一系列相连的地点（使用北、南、东、西或 N,S,E,W）。
-玩家可以收集物品并与怪物作战。击败怪物后，玩家在游戏中的得分就会增加。游戏的目标是获得高分（通过击败怪物）和击败 "关卡结束时的老大"。
-游戏开始时应该有一些介绍性文字来设置场景，玩家可以在任何时候输入退出退出游戏。玩家可以输入 inventory 或 inv 查看自己所持有的所有物品清单。
+玩家可以收集物品并与怪物作战。
+
+击败怪物后，玩家在游戏中的得分就会增加。游戏的目标是获得高分（通过击败怪物）和击败 "关卡结束时的老大"。
+
+游戏开始时应该有一些介绍性文字来设置场景，玩家可以在任何时候输入退出退出游戏。
+玩家可以输入 inventory 或 inv 查看自己所持有的所有物品清单。
 玩家可以输入 fight 与怪物交战，
 或输入 collect 收集当前房间的所有物品。
+
 您必须使用指定的类、方法和变量名，以确保您的代码可以被测试。
 使用 STL容器和迭代器来存储和操作游戏中的各种对象将获得分数。
 您可以自由添加其他方法/变量/函数。请务必在代码中添加注释，简要说明类、方法和重要代码块的目的和功能。
 还要记得进行错误处理。在下面的编程元素说明中，我特意没有指定函数参数和返回类型--这是由你来指定的。
 同样，我也没有说明在哪些地方适合使用指针。
 我指定了大部分怪物/位置/对象--这是为了测试游戏性。任务分为以下几项
-
 
 ### 4.2 Task 1 - create game classes  
 The following classes should be written:
@@ -101,7 +102,6 @@ and three containers weapons, potions and treasures which hold the player’s it
 It should also have the private member variable currentLocation which represents the player’s current location. 
 This can be set using setCurrentLocation and read using getCurrentLocation.
 
-
 • Item Item should have the following methods: getName, setName, which will set or get the name of the item.
 
 • Potion Potion should be derived from Item. It should have a member variable
@@ -112,7 +112,6 @@ power (integer), which should be accessible via getPower and setPower.
 
 • Treasure Treasure should be derived from Item. It should have a member variable
 value (integer), which should be accessible via getValue and setValue.
-
 
 • Location A Location object represents a place within the game. 
 It should hold data including name and description (accessible via member functions setName, getName, setDescription, getDescription). 
@@ -142,7 +141,6 @@ And exits, which holds the exits leading to other location objects.
 成员变量应包括存放玩家物品的容器:武器、药水和宝物。
 出口存放通往其他位置对象的出口。
 
-
 #### 4.2.1 File Structure 
 The File Structure should be according to good C++ practice, with declarations in the .h
 files and implementations in the .cpp files. 
@@ -158,7 +156,6 @@ Files are:
 • Location.cpp
 • Location.h
 • AdventureGame.cpp
-
 
 ### 4.3 Task 2 - Build the game world  
 Build the game by creating location objects and linking them together using the objects’ exits member variable. 
@@ -181,8 +178,7 @@ quit, the game should display the user’s score (which at this stage will be 0)
 以下是位置名称：
 洞穴、寺庙、地牢、城堡、空地、大厅、花园、图书馆、森林、房屋、废墟、田野。
 
-设置每个位置对象的描述（您可以在这里写上任何您想要的内容）和名称
-例如，"废墟 "可以被命名为 "在一些废墟中"。
+设置每个位置对象的描述（您可以在这里写上任何您想要的内容）和名称. 例如，"废墟 "可以被命名为 "在一些废墟中"。
 
 建立游戏后，将玩家的当前位置设置为空地--这将是游戏的开始位置。
 游戏的开始位置。
@@ -190,9 +186,6 @@ quit, the game should display the user’s score (which at this stage will be 0)
 在 main() 函数中创建一个游戏循环。在这一阶段，游戏循环只需
 获取玩家的指令，然后再次描述位置。如果用户输入
 退出，游戏将显示用户的分数（在此阶段分数为 0）并结束。
-
-
-
 
 ### 4.4 Task 3 - Room Navigation  
 Modify the game loop so that it now tells the user where they are, and what exits are
@@ -207,15 +200,10 @@ the game if necessary.
 
 修改游戏循环，使其现在能告诉用户所在的位置，以及有哪些出口（N、S、E 或 W）。
 可用的出口（北、南、东或西）。
-如果用户输入一个方向（N、S、E 或 W，或北、南、东或西，或 N、S、E
-或 W），游戏就会计算出该方向是否有出口，如果有，当前位置就会变更为该方向。
+如果用户输入一个方向（N、S、E 或 W，或北、南、东或西，或 N、S、E、），游戏就会计算出该方向是否有出口，如果有，当前位置就会变更为该方向。
 如果有，当前位置就会变更为该位置。
 如果出口不存在，游戏应告诉用户，并保持当前位置。
-位置。
 在这项任务结束时，用户应该能够在游戏中四处浏览，并在必要时退出游戏。
-
-
-
 
 ### 4.5 Task 4 - Adding Items
 Create some items (see below).
@@ -225,14 +213,16 @@ Weapons: dagger, sword, crossbow, club, stick.
 Use addItem to add these items (weapons, potions, treasures) to the locations in the
 game as follows:
 
-
 Change the game loop so that it announces what items are in the location, if any.
 This information should be obtainable from the player’s current location.
+
 If the user types collect, all of the items in the location should be collected by the
 user. If the user types inv or inventory they should see a list of all their items, in the
-three groups (Potions, Treasures, Weapons). Sort the lists alphabetically. If the user
-types drink, all the healing potions in the user’s inventory should be deleted, and their
+three groups (Potions, Treasures, Weapons). Sort the lists alphabetically. 
+
+If the user types drink, all the healing potions in the user’s inventory should be deleted, and their
 ‘strength’ points should be added to the player’s HitPoints.
+
 By the end of this task the user should be able to collect all items from rooms, drink the
 healing potions, and list the items in the inventory.
 
@@ -242,11 +232,12 @@ healing potions, and list the items in the inventory.
 武器：匕首、剑、弩、棍棒、手杖。
 
 使用addItem函数将这些物品（武器、药水、宝藏）添加到游戏中的位置，如下所示：
-
-修改游戏循环，以便宣布当前位置有哪些物品（如果有的话）。玩家应该能够从当前位置获取这些信息。如果玩家输入collect，那么该位置的所有物品应该被玩家收集。如果玩家输入inv或inventory，则应该看到他们所有物品的列表，分为三组（药水、宝藏、武器），并按字母顺序排序。如果玩家输入drink，则应删除玩家库存中的所有治疗药水，并将它们的“力量”点数添加到玩家的生命值HitPoints中。
+修改游戏循环，以便宣布当前位置有哪些物品（如果有的话）。
+玩家应该能够从当前位置获取这些信息。如果玩家输入collect，那么该位置的所有物品应该被玩家收集。
+如果玩家输入inv或inventory，则应该看到他们所有物品的列表，分为三组（药水、宝藏、武器），并按字母顺序排序。
+如果玩家输入drink，则应删除玩家库存中的所有治疗药水，并将它们的“力量”点数添加到玩家的生命值HitPoints中。
 
 通过这个任务的最后，玩家应该能够从房间中收集所有物品，喝下治疗药水，以及列出库存中的物品。
-
 
 ### 4.6 Task 5 - Adding Monsters  
 Use addMonster to add monsters to the rooms.
@@ -265,10 +256,8 @@ By the end of this task there should be monsters in locations.
 注意，房子里有两个怪物。
 任务结束时，各个地点都应该有怪物。
 
-
 ### 4.7 Task 6 - Combat
-By the end of this task it should be possible to engage in combat with the monsters/enemies
-according to the rules of combat, by typing fight.
+By the end of this task it should be possible to engage in combat with the monsters/enemies according to the rules of combat, by typing fight.
 Create a function called rollDice which will return a random integer from 1-6.
 Create a member function of the Player class, called combat, that will conduct combat
 with between the player and any enemies in the current location. The rules of combat
@@ -293,26 +282,29 @@ will decrease the character’s hitpoints by the given amount.
 10. If the player is defeated, the player’s score is shown and the game ends.
 
 
-为了实现与怪物/敌人进行战斗的功能，您可以按照以下步骤进行操作：
+在这个任务结束时，应该能够根据战斗规则与怪物/敌人进行战斗，通过输入fight来触发战斗。
 
-创建一个名为 rollDice 的函数，用于返回一个1到6之间的随机整数。
-在 Player 类中创建一个名为 combat 的成员函数，用于在当前位置与怪物进行战斗。战斗规则如下：
-怪物和玩家都有生命值（hitpoint value）。一旦一个角色的生命值降至0，该角色被击败。
-怪物先攻击玩家。
-怪物对玩家造成的伤害由调用 rollDice 函数并将结果乘以2来确定（结果范围为0-12）。
+创建一个名为rollDice的函数，它将返回一个1-6之间的随机整数。
+
+在Player类中创建一个名为combat的成员函数，用于在当前位置进行玩家与任何敌人之间的战斗。战斗规则如下：
+
+怪物和玩家都有生命值。一旦角色的生命值降至0，该角色就被击败。
+怪物先攻击。
+怪物对玩家造成的伤害由调用rollDice函数并将结果乘以2来确定（因此结果可以是0-12）。
 玩家的生命值总数减去怪物造成的伤害。
-玩家然后反击 - 调用 rollDice，并根据具有最高攻击力评级的武器进行修改。因此，如果玩家有一把攻击力为10的剑，那么10将被添加到骰子点数以确定对怪物造成的伤害。
-
-这个循环持续进行，直到玩家或敌人的生命值降至0。
-每轮战斗后，显示每个战斗者的生命值给用户看。
-如果房间中有多个怪物，则在用户输入 fight 时只与一个怪物进行战斗 - 用户需要再次输入以与另一个怪物战斗。怪物的顺序应该是从强到弱 - 所以玩家首先与生命值较高的怪物战斗。
-在 Character 类中添加一个名为 takeHit 的成员函数，用于减少角色的生命值。
-如果玩家被击败，显示玩家的分数并结束游戏。
+玩家然后反击 - 调用rollDice，并且这个值会被具有最高攻击力评级的武器修改。因此，如果玩家有一把攻击力为10的剑，10将被添加到骰子的结果中，以确定对怪物造成的伤害。
+这个循环会持续，直到玩家或敌人的生命值降至0。
+每轮战斗后，每个战斗者的生命值会显示给用户。
+如果房间中有多个怪物，当用户输入fight时，只有一个怪物参与战斗 - 用户需要再次输入fight来与另一个怪物战斗。怪物的顺序应该是从强到弱 - 所以玩家首先与生命值较高的怪物战斗。
+Character类应该添加名为takeHit的成员函数，用于减少角色的生命值。
+如果玩家被击败，将显示玩家的得分并结束游戏。
 
 ### 4.8 Task 7 - The Boss  
 Create a new Player character called ‘boss’, give it a name and description, and add the
 boss to the game. Put the boss in the cave. Modify the game loop so that when the
 boss is defeated, the game ends.
+
+创建一个名为“boss”的新玩家角色，给它起一个名字和描述，并将boss添加到游戏中。将boss放在洞穴里(cave)。修改游戏循环，使得当boss被打败时，游戏结束。
 
 ### 4.9 Task 8 - Game Enhancements  
 Add further items to the game:
@@ -344,9 +336,10 @@ that during combat, damage inflicted on the player by an enemy is reduced by a r
 amount between 0 and the total value of protection of all the armour in the player’s
 possession.
 
-创建一个名为Armour的Item子类。
-在游戏中添加至少5个护甲的例子。一些例子包括：环甲、锁子甲、盾牌、胸甲、头盔、护手。
-除了名称和描述外，Armour类应该有一个名为protection的成员变量。你可以决定其值。但确保将护手（protection为2）放在图书馆中。护甲可以减少对角色造成的伤害。
-所有Character对象应该有使用护甲的能力，因此应该在Character（父类）级别实现。
-当玩家输入inv或inventory时，所有护甲物品应该列给用户看。
-修改战斗规则，使得在战斗中，敌人对玩家造成的伤害会减少一个随机数，该随机数的范围在0到玩家所有护甲的总保护值之间。
+创建一个名为Armour的Item子类。在游戏中添加至少5个护甲的例子，例如：ringmail、chainmail、shield、breastplate、helmet、gauntlet。
+
+除了名称和描述之外，Armour类应该有一个名为protection的成员变量。您可以为此变量决定数值。但请确保将protection值为2的gauntlet放在图书馆中。
+护甲可以减少对角色造成的伤害。
+所有Character对象应该具有使用护甲的能力，因此应该在Character（父类）级别实现。
+当玩家输入inv或inventory时，所有护甲物品应该列在用户面前。
+修改战斗规则，使得在战斗中，敌人对玩家造成的伤害会减少一个随机值，该值介于0和玩家所有护甲总protection值之间。

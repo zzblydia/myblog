@@ -1,4 +1,3 @@
-// Character.h
 #ifndef CHARACTER_H
 #define CHARACTER_H
 
@@ -13,7 +12,8 @@ class Character {
 private:
     std::string name;
     int hitPoints;
-    int protection;
+    std::vector<Treasure*> treasures;
+    std::vector<Potion*> potions;
     std::vector<Armour*> armours;
 
 public:
@@ -23,27 +23,27 @@ public:
     void setHitPoints(int newHitPoints);
     int getHitPoints() const;
     void takeHit(int damage);
+    int getProtections() const;
+    void addTreasure(Treasure* treasure);
+    std::vector<Treasure*> getTreasures();
+    void clearTreasures();
+    void addPotion(Potion* potion);
+    std::vector<Potion*> getPotions();
+    void clearPotions();
     void addArmour(Armour* armour);
     std::vector<Armour*> getArmours() const;
-    int getProtection() const;
+    void clearArmours();
 };
 
 class Monster : public Character {
-private:
-    std::vector<Treasure*> treasures;
-    std::vector<Potion*> potions;
 public:
     Monster(std::string name, int hitPoints);
-    void addTreasure(Treasure* treasure);
-    void addPotion(Potion* potion);
 };
 
 class Player : public Character {
 private:
     int score;
     std::vector<Weapon*> weapons;
-    std::vector<Potion*> potions;
-    std::vector<Treasure*> treasures;
     Location* currentLocation;
 
 public:
@@ -53,16 +53,8 @@ public:
     void setCurrentLocation(Location* newLocation);
     Location* getCurrentLocation();
     void addWeapon(Weapon* weapon);
-    void addPotion(Potion* potion);
-    void addTreasure(Treasure* treasure);
-
-    // 显示物品
-    void displayItems() const;
-
-    // 访问和清理
-    std::vector<Potion*> getPotions();
-    void clearPotions();
-
+    void clearWeapons();
+    void displayItems();
     int combat(Character *character);
 };
 
