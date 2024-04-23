@@ -43,6 +43,7 @@ void Location::addMonster(Character *newMonster) {
 
 void Location::delMonster(Character *monsterToDelete) {
     // Code to delete the specified monster from the monsters vector
+    monsters.erase(std::remove(monsters.begin(), monsters.end(), monsterToDelete), monsters.end());
 }
 
 void Location::getExits() const {
@@ -108,9 +109,11 @@ const std::vector<Treasure *> Location::getTreasures() {
 void Location::clearWeapon() {
     weapons.clear();
 }
+
 void Location::clearPotion() {
     potions.clear();
 }
+
 void Location::clearTreasure() {
     treasures.clear();
 }

@@ -39,6 +39,14 @@ Monster::Monster(std::string name, int hitPoints) {
     Character(name, hitPoints);
 }
 
+void Monster::addTreasure(Treasure *treasure) {
+    treasures.push_back(treasure);
+}
+
+void Monster::addPotion(Potion *potion) {
+    potions.push_back(potion);
+}
+
 int rollDice() {
     return rand() % 6 + 1; // Generate a random number between 1 and 6
 }

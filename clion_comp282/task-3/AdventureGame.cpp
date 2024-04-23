@@ -146,7 +146,17 @@ int main() {
     std::vector<Location *> locations = {&cave, &temple, &dungeon, &castle, &clearing, &hall, &garden, &library,
                                          &forest, &house, &ruins, &field};
 
-
+    // Game Enhancements
+    Potion green("green healing", 10);
+    goblin.addPotion(&green);
+    Treasure cup("cup", 20);
+    zombie.addTreasure(&cup);
+    Treasure pearl("pearl", 30);
+    banshee.addTreasure(&pearl);
+    Treasure Key("key", 40);
+    ghoul.addTreasure(&Key);
+    Treasure Book("book", 50);
+    vampire.addTreasure(&Book);
 
     // Game logic goes here
     std::cout << "Welcome to the Adventure Game!" << std::endl;
@@ -218,11 +228,17 @@ int main() {
             if (strongestMonster != nullptr) {
                 // fight the strongest monster
                 int ret = player.combat(strongestMonster);
-                // 如果击败boss
-                if (ret == 1 && strongestMonster->getName() == "boss") {
-                    std::cout << "boss over, Your final score is: " << player.getScore() << std::endl;
-                    std::cout << "Thanks for playing! Goodbye!" << std::endl;
-                    break;
+
+                if (ret == 1) {
+                    // 如果击败boss
+                    if (strongestMonster->getName() == "boss") {
+                        std::cout << "boss over, Your final score is: " << player.getScore() << std::endl;
+                        std::cout << "Thanks for playing! Goodbye!" << std::endl;
+                        break;
+                    } else {
+                        // 击败普通怪物, 没有看到要得分
+                        player.getCurrentLocation()->delMonster(strongestMonster);
+                    }
                 } else if (ret == -1) {
                     std::cout << "You have been defeated by the " << strongestMonster->getName() << "!" << std::endl;
                     std::cout << "Your final score is: " << player.getScore() << std::endl;

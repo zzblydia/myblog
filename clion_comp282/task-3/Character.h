@@ -24,10 +24,14 @@ public:
 };
 
 class Monster : public Character {
-    // Additional monster-specific attributes or methods can be added here
+private:
+    std::vector<Treasure*> treasures;
+    std::vector<Potion*> potions;
 public:
     Monster();
     Monster(std::string name, int hitPoints);
+    void addTreasure(Treasure* treasure);
+    void addPotion(Potion* potion);
 };
 
 class Player : public Character {
