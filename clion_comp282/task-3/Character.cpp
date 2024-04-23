@@ -25,6 +25,10 @@ int Character::getHitPoints() const {
     return hitPoints;
 }
 
+void Character::takeHit(int damage) {
+    hitPoints -= damage;
+}
+
 void Character::addArmour(Armour *armour) {
     armours.push_back(armour);
 }
@@ -153,6 +157,11 @@ void Player::clearPotions() {
 // 玩家被击败, 返回-1
 // 怪物被击败, 返回1
 int Player::combat(Character *character) {
+    std::cout << "Engaging the " << character->getName() << " in combat..." << std::endl;
+    std::cout << " the " << character->getName() << " (" << character->getHitPoints() << ")" << std::endl;
+    std::cout << "Hero vs the " << character->getName() << std::endl;
+
+    // 选择最强武器
     int maxWeaponPower = 0;
     for (auto weapon: weapons) {
         if (weapon->getPower() > maxWeaponPower) {
@@ -160,16 +169,18 @@ int Player::combat(Character *character) {
         }
     }
 
-    // Combat logic
+    int round = 0;
     while (getHitPoints() > 0 && character->getHitPoints() > 0) {
+        round++;
+        std::cout << "-------------------" << std::endl;
+        std::cout << "Round " << round << std::endl;
+
         // Monster attacks first
         int monsterDamage = rollDice() * 2;
         takeHit(monsterDamage);
-        std::cout << "Monster attacks! Player hitpoints: " << getHitPoints() << std::endl;
 
         if (getHitPoints() <= 0) {
-            std::cout << "Player defeated! Score: " << score << std::endl;
-            // End the game
+            std::cout << getHitPoints() << " " << character->getHitPoints() << std::endl;
             return -1;
         }
 
@@ -177,20 +188,13 @@ int Player::combat(Character *character) {
         int playerDamage = rollDice() + maxWeaponPower;
         // Apply player's damage to the monster
         int monsterHitPoints = character->getHitPoints() - playerDamage;
-        // Update monster's hitpoints
         character->setHitPoints(monsterHitPoints);
 
-        std::cout << "Player attacks! Monster hitpoints: " << monsterHitPoints << std::endl;
         // Check if monster is defeated
         if (monsterHitPoints <= 0) {
+            std::cout << getHitPoints() << " " << character->getHitPoints() << std::endl;
             return 1;
         }
     }
     return 0;
 }
-
-void Player::takeHit(int damage) {
-    setHitPoints(getHitPoints() - damage);
-}
-
-

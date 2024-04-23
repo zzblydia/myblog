@@ -22,6 +22,7 @@ public:
     std::string getName() const;
     void setHitPoints(int newHitPoints);
     int getHitPoints() const;
+    void takeHit(int damage);
     void addArmour(Armour* armour);
     std::vector<Armour*> getArmours() const;
     int getProtection() const;
@@ -63,7 +64,6 @@ public:
     void clearPotions();
 
     int combat(Character *character);
-    void takeHit(int damage);
 };
 
 #endif
