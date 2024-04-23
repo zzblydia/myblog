@@ -124,6 +124,16 @@ delMonster (deletes monster),
 getExits (displays a list of exits to the player),
 addItem (places a specific item at this location). 
 
+地点, 一个地点对象代表游戏中的一个地点。
+它应保存包括名称和描述在内的数据（可通过成员函数 setName、getName、setDescription、getDescription 访问）。
+程序员可以使用以下函数将其他游戏实体填充到位置对象中
+成员函数 
+addExit（创建一个出口，可以是 N、S、E 或 W，通向另一个位置对象）、 
+addMonster（在该位置放置特定怪物）、
+delMonster （删除怪物）、 
+getExits （向玩家显示出口列表）、
+addItem（在此位置放置特定物品）。
+
 Function overloading should be used on the addItem method so that addItem handles adding potions, treasures or weapons to the location. 
 Member variables should include the containers weapons, potions and treasures which hold the player’s items. 
 And exits, which holds the exits leading to other location objects.

@@ -52,11 +52,11 @@ public:
     void setValue(int newValue);
 };
 
-class armour : public Item {
+class Armour : public Item {
 private:
     int protection;
 public:
-    armour(std::string name, int protection);
+    Armour(std::string name, int protection);
     int getProtection() const;
     void setProtection(int newProtection);
 };

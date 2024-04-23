@@ -48,9 +48,13 @@ void Location::delMonster(Character *monsterToDelete) {
 
 void Location::getExits() const {
     // Code to display list of exits to the player
-    for (const auto &pair: exits) {
-        char key = pair.first;
-        std::cout << key << " ";
+    for (size_t i = 0; i < exits.size(); ++i) {
+        std::cout << exits[i].first;
+        if (i < exits.size() - 1) {
+            std::cout << ", ";
+        } else {
+            std::cout << ".";
+        }
     }
     std::cout << std::endl;
 }
@@ -76,6 +80,20 @@ void Location::addItem(Treasure *treasure) {
     treasures.push_back(treasure);
 }
 
+void Location::delItem(Weapon *weaponToDelete) {
+    // Code to delete the specified weapon from the weapons vector
+    weapons.erase(std::remove(weapons.begin(), weapons.end(), weaponToDelete), weapons.end());
+}
+
+void Location::delItem(Potion *potionToDelete) {
+    // Code to delete the specified potion from the potions vector
+    potions.erase(std::remove(potions.begin(), potions.end(), potionToDelete), potions.end());
+}
+
+void Location::delItem(Treasure *treasureToDelete) {
+    // Code to delete the specified treasure from the treasures vector
+    treasures.erase(std::remove(treasures.begin(), treasures.end(), treasureToDelete), treasures.end());
+}
 void Location::displayItems() const {
     // Code to display items in the location
     if (weapons.size() == 0 && potions.size() == 0 && treasures.size() == 0) {
@@ -94,28 +112,16 @@ void Location::displayItems() const {
     }
 }
 
-const std::vector<Weapon *> Location::getWeapons() {
+std::vector<Weapon *> Location::getWeapons() {
     return weapons;
 }
 
-const std::vector<Potion *> Location::getPotions() {
+std::vector<Potion *> Location::getPotions() {
     return potions;
 }
 
-const std::vector<Treasure *> Location::getTreasures() {
+std::vector<Treasure *> Location::getTreasures() {
     return treasures;
-}
-
-void Location::clearWeapon() {
-    weapons.clear();
-}
-
-void Location::clearPotion() {
-    potions.clear();
-}
-
-void Location::clearTreasure() {
-    treasures.clear();
 }
 
 std::vector<Character *> Location::getMonsters() const {

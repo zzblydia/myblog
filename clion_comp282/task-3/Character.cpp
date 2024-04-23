@@ -6,6 +6,7 @@
 Character::Character(std::string name, int hitPoints) {
     this->name = name;
     this->hitPoints = hitPoints;
+    this->protection = 0;
 }
 
 void Character::setName(const std::string &newName) {
@@ -24,16 +25,24 @@ int Character::getHitPoints() const {
     return hitPoints;
 }
 
-void Character::addArmour(armour *armour) {
+void Character::addArmour(Armour *armour) {
     armours.push_back(armour);
 }
 
-std::vector<armour *> Character::getArmours() const {
+std::vector<Armour *> Character::getArmours() const {
     return armours;
 }
 
+int Character::getProtection() const {
+    int totalProtection = 0;
+    for (auto armour: armours) {
+        totalProtection += armour->getProtection();
+    }
+    return totalProtection;
+}
+
 // Implement Monster class methods
-Monster::Monster(std::string name, int hitPoints) : Character(name, hitPoints){
+Monster::Monster(std::string name, int hitPoints) : Character(name, hitPoints) {
 }
 
 void Monster::addTreasure(Treasure *treasure) {
@@ -82,40 +91,55 @@ void Player::addTreasure(Treasure *treasure) {
     treasures.push_back(treasure);
 }
 
+bool compareByName(Item *a, Item *b) {
+    return a->getName() < b->getName();
+}
+
 void Player::displayItems() const {
-    std::vector<std::string> weaponNames;
-    for (auto weapon: weapons) {
-        weaponNames.push_back(weapon->getName());
-    }
-    std::vector<std::string> potionNames;
-    for (auto potion: potions) {
-        potionNames.push_back(potion->getName());
-    }
-    std::vector<std::string> treasureNames;
-    for (auto treasure: treasures) {
-        treasureNames.push_back(treasure->getName());
-    }
-    std::sort(weaponNames.begin(), weaponNames.end());
-    std::sort(potionNames.begin(), potionNames.end());
-    std::sort(treasureNames.begin(), treasureNames.end());
+    std::cout << "You have the following items:" << std::endl;
+    std::cout << "===================================" << std::endl;
+    std::cout << " Score: " << score << " Health: " << getHitPoints() << std::endl;
+    std::cout << " Total Armour Protection: " << getProtection() << std::endl;
 
-    std::cout << "Weapons: ";
-    for (auto weapon: weapons) {
-        std::cout << weapon->getName() << " ";
+    std::vector<Weapon *> displayWeapons = weapons;
+    std::sort(displayWeapons.begin(), displayWeapons.end(), compareByName);
+    std::cout << "Weapons: " << std::endl;
+    for (auto weapon: displayWeapons) {
+        std::cout << " " << weapon->getName() << " (" << weapon->getPower() << ")" << std::endl;
     }
-    std::cout << std::endl;
 
-    std::cout << "Potions: ";
-    for (auto potionName: potionNames) {
-        std::cout << potionName << " ";
+    std::vector<Potion *> displayPotions = potions;
+    std::sort(displayPotions.begin(), displayPotions.end(), compareByName);
+    std::cout << "Potions: " << std::endl;
+    if (displayPotions.size()) {
+        for (auto potion: displayPotions) {
+            std::cout << " " << potion->getName() << " (" << potion->getStrength() << ")" << std::endl;
+        }
+    } else {
+        std::cout << " none." << std::endl;
     }
-    std::cout << std::endl;
 
-    std::cout << "Treasures: ";
-    for (auto treasureName: treasureNames) {
-        std::cout << treasureName << " ";
+    std::vector<Treasure *> displayTreasures = treasures;
+    std::sort(displayTreasures.begin(), displayTreasures.end(), compareByName);
+    std::cout << "Treasures: " << std::endl;
+    if (displayTreasures.size()) {
+        for (auto treasure: displayTreasures) {
+            std::cout << " " << treasure->getName() << " (" << treasure->getValue() << ")" << std::endl;
+        }
+    } else {
+        std::cout << " none." << std::endl;
     }
-    std::cout << std::endl;
+
+    std::vector<Armour *> displayArmours = getArmours();
+    std::sort(displayArmours.begin(), displayArmours.end(), compareByName);
+    std::cout << "Armours: " << std::endl;
+    if (displayArmours.size()) {
+        for (auto armour: displayArmours) {
+            std::cout << " " << armour->getName() << " (" << armour->getProtection() << ")" << std::endl;
+        }
+    } else {
+        std::cout << " none." << std::endl;
+    }
 }
 
 std::vector<Potion *> Player::getPotions() {

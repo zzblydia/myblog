@@ -13,17 +13,18 @@ class Character {
 private:
     std::string name;
     int hitPoints;
-    std::vector<armour*> armours;
+    int protection;
+    std::vector<Armour*> armours;
 
 public:
-    Character();
     Character(std::string name, int hitPoints);
     void setName(const std::string& newName);
     std::string getName() const;
     void setHitPoints(int newHitPoints);
     int getHitPoints() const;
-    void addArmour(armour* armour);
-    std::vector<armour*> getArmours() const;
+    void addArmour(Armour* armour);
+    std::vector<Armour*> getArmours() const;
+    int getProtection() const;
 };
 
 class Monster : public Character {
@@ -31,7 +32,6 @@ private:
     std::vector<Treasure*> treasures;
     std::vector<Potion*> potions;
 public:
-    Monster();
     Monster(std::string name, int hitPoints);
     void addTreasure(Treasure* treasure);
     void addPotion(Potion* potion);
@@ -46,7 +46,6 @@ private:
     Location* currentLocation;
 
 public:
-    Player();
     Player(std::string name, int hitPoints);
     void setScore(int newScore);
     int getScore() const;
@@ -65,8 +64,6 @@ public:
 
     int combat(Character *character);
     void takeHit(int damage);
-
-
 };
 
 #endif

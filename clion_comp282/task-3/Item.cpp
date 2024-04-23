@@ -46,7 +46,7 @@ void Treasure::setValue(int newValue) {
 }
 
 // armour methods
-armour::armour(std::string name, int protection) : Item(name) {
+Armour::Armour(std::string name, int protection) : Item(name) {
     if (name == "gauntlet") {
         this->protection = 2;
     } else {
@@ -54,10 +54,10 @@ armour::armour(std::string name, int protection) : Item(name) {
     }
 }
 
-int armour::getProtection() const {
+int Armour::getProtection() const {
     return protection;
 }
 
-void armour::setProtection(int newProtection) {
+void Armour::setProtection(int newProtection) {
     protection = newProtection;
 }

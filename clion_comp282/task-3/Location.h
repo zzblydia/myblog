@@ -40,14 +40,13 @@ public:
     void addItem(Weapon* weapon);
     void addItem(Treasure* treasure);
     void displayItems() const;
+    void delItem(Weapon* weaponToDelete);
+    void delItem(Potion* potionToDelete);
+    void delItem(Treasure* treasureToDelete);
 
-    const std::vector<Weapon*> getWeapons() ;
-    const std::vector<Potion*> getPotions() ;
-    const std::vector<Treasure*> getTreasures() ;
-
-    void clearWeapon();
-    void clearPotion();
-    void clearTreasure();
+    std::vector<Weapon*> getWeapons() ;
+    std::vector<Potion*> getPotions() ;
+    std::vector<Treasure*> getTreasures() ;
 };
 
 #endif
