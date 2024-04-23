@@ -49,14 +49,14 @@ void Location::delMonster(Character *monsterToDelete) {
 void Location::getExits() const {
     // Code to display list of exits to the player
     for (size_t i = 0; i < exits.size(); ++i) {
-        std::cout << exits[i].first;
+        cout << exits[i].first;
         if (i < exits.size() - 1) {
-            std::cout << ", ";
+            cout << ", ";
         } else {
-            std::cout << ".";
+            cout << ".";
         }
     }
-    std::cout << std::endl;
+    cout << std::endl;
 }
 
 Location *Location::getExit(char direction) {
@@ -99,15 +99,15 @@ void Location::displayItems() const {
     if (weapons.size() == 0 && potions.size() == 0 && treasures.size() == 0) {
         return;
     } else {
-        std::cout << "Items in location " << getName() << ": " << std::endl;
+        cout << "Items in location " << getName() << ": " << std::endl;
         for (const auto &potion: potions) {
-            std::cout << "Potion: " << potion->getName() << std::endl;
+            cout << "Potion: " << potion->getName() << std::endl;
         }
         for (const auto &treasure: treasures) {
-            std::cout << "Treasure: " << treasure->getName() << std::endl;
+            cout << "Treasure: " << treasure->getName() << std::endl;
         }
         for (const auto &weapon: weapons) {
-            std::cout << "Weapon: " << weapon->getName() << std::endl;
+            cout << "Weapon: " << weapon->getName() << std::endl;
         }
     }
 }

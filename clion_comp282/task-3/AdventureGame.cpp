@@ -4,88 +4,86 @@
 
 void Welcome(Player &player, std::vector<Location *> &locations) {
     // Function to welcome the player
-    std::cout
-            << "Welcome to the Adventure Game. The aim is to defeat to Boss, but your score points for defeating monsters along th way."
-            << std::endl;
-    std::cout << "You can use the commands:" << std::endl;
-    std::cout << "n, s, e, w, inventory, drink, collect, fight, quit." << std::endl << std::endl;
+    cout << "Welcome to the Adventure Game. The aim is to defeat to Boss, but your score points for defeating monsters along th way." << std::endl;
+    cout << "You can use the commands:" << std::endl;
+    cout << "n, s, e, w, inventory, drink, collect, fight, quit." << std::endl << std::endl;
 }
 
 void DescribeLocation(Player &player) {
     // Function to describe the current location
-    std::cout << "---" << std::endl;
-    std::cout << "You are in a " << player.getCurrentLocation()->getName() << "." << std::endl;
-    std::cout << player.getCurrentLocation()->getDescription() << std::endl;
+    cout << "---" << std::endl;
+    cout << "You are in a " << player.getCurrentLocation()->getName() << "." << std::endl;
+    cout << player.getCurrentLocation()->getDescription() << std::endl;
 }
 
 void DescribeExits(Player &player) {
     // Function to describe the available exits
-    std::cout << "Exits are ";
+    cout << "Exits are ";
     player.getCurrentLocation()->getExits();
 }
 
 void DescribeLocationItems(Location *location) {
     if (location == nullptr) {
-        std::cout << "Location is null in function DescribeLocationItems" << std::endl;
+        cout << "Location is null in function DescribeLocationItems" << std::endl;
         return;
     }
     // Function to describe the items in the location
     int monsterCount = location->getMonsters().size();
     if (monsterCount == 1) {
-        std::cout << "the " << location->getMonsters()[0]->getName() << " is here." << std::endl;
+        cout << "the " << location->getMonsters()[0]->getName() << " is here." << std::endl;
     } else if (monsterCount > 1) {
-        std::cout << "the ";
+        cout << "the ";
         for (int count = 0; count < monsterCount; count++) {
-            std::cout << location->getMonsters()[count]->getName();
+            cout << location->getMonsters()[count]->getName();
             if (count < monsterCount - 1) {
-                std::cout << ", ";
+                cout << ", ";
             } else {
-                std::cout << " are here." << std::endl;
+                cout << " are here." << std::endl;
             }
         }
     }
 
     int weaponCount = location->getWeapons().size();
     if (weaponCount == 1) {
-        std::cout << "There is a " << location->getWeapons()[0]->getName() << " here." << std::endl;
+        cout << "There is a " << location->getWeapons()[0]->getName() << " here." << std::endl;
     } else if (weaponCount > 1) {
-        std::cout << "There are ";
+        cout << "There are ";
         for (int count = 0; count < weaponCount; count++) {
-            std::cout << location->getWeapons()[count]->getName();
+            cout << location->getWeapons()[count]->getName();
             if (count < weaponCount - 1) {
-                std::cout << ", ";
+                cout << ", ";
             } else {
-                std::cout << " here." << std::endl;
+                cout << " here." << std::endl;
             }
         }
     }
 
     int potionCount = location->getPotions().size();
     if (potionCount == 1) {
-        std::cout << "There is a " << location->getPotions()[0]->getName() << " here." << std::endl;
+        cout << "There is a " << location->getPotions()[0]->getName() << " here." << std::endl;
     } else if (potionCount > 1) {
-        std::cout << "There are ";
+        cout << "There are ";
         for (int count = 0; count < potionCount; count++) {
-            std::cout << location->getPotions()[count]->getName();
+            cout << location->getPotions()[count]->getName();
             if (count < potionCount - 1) {
-                std::cout << ", ";
+                cout << ", ";
             } else {
-                std::cout << " here." << std::endl;
+                cout << " here." << std::endl;
             }
         }
     }
 
     int treasureCount = location->getTreasures().size();
     if (treasureCount == 1) {
-        std::cout << "There is a " << location->getTreasures()[0]->getName() << " here." << std::endl;
+        cout << "There is a " << location->getTreasures()[0]->getName() << " here." << std::endl;
     } else if (treasureCount > 1) {
-        std::cout << "There are ";
+        cout << "There are ";
         for (int count = 0; count < treasureCount; count++) {
-            std::cout << location->getTreasures()[count]->getName();
+            cout << location->getTreasures()[count]->getName();
             if (count < treasureCount - 1) {
-                std::cout << ", ";
+                cout << ", ";
             } else {
-                std::cout << " here." << std::endl;
+                cout << " here." << std::endl;
             }
         }
     }
@@ -97,21 +95,21 @@ void collect(Player &player) {
     std::vector<Weapon *> weapons = currentLocation->getWeapons();
     for (auto &weapon: weapons) {
         player.addWeapon(weapon);
-        std::cout << "You collected the " << weapon->getName() << "." << std::endl;
+        cout << "You collected the " << weapon->getName() << "." << std::endl;
         currentLocation->delItem(weapon);
     }
 
     std::vector<Potion *> potions = currentLocation->getPotions();
     for (auto &potion: potions) {
         player.addPotion(potion);
-        std::cout << "You collected the " << potion->getName() << "." << std::endl;
+        cout << "You collected the " << potion->getName() << "." << std::endl;
         currentLocation->delItem(potion);
     }
 
     std::vector<Treasure *> treasures = currentLocation->getTreasures();
     for (auto &treasure: treasures) {
         player.addTreasure(treasure);
-        std::cout << "You collected the " << treasure->getName() << "." << std::endl;
+        cout << "You collected the " << treasure->getName() << "." << std::endl;
         currentLocation->delItem(treasure);
     }
 }
@@ -128,7 +126,7 @@ void fight(Player &player) {
     }
 
     if (strongestMonster == nullptr) {
-        std::cout << "There are no monsters to fight." << std::endl;
+        cout << "There are no monsters to fight." << std::endl;
         return;
     }
 
@@ -136,19 +134,19 @@ void fight(Player &player) {
     if (ret == 1) {
         // 如果击败boss
         if (strongestMonster->getName() == "boss") {
-            std::cout << "You have beaten the boss" << std::endl;
-            std::cout << "Your final score is: " << player.getScore() << std::endl;
-            std::cout << "Thanks for playing! Goodbye!" << std::endl;
+            cout << "You have beaten the boss" << std::endl;
+            cout << "Your final score is: " << player.getScore() << std::endl;
+            cout << "Thanks for playing! Goodbye!" << std::endl;
             exit(0);
         } else {
             // 击败普通怪物, 没有看到要得分, 从当前位置删除怪物
-            std::cout << "You have beaten the " << strongestMonster->getName() << std::endl;
+            cout << "You have beaten the " << strongestMonster->getName() << std::endl;
             player.getCurrentLocation()->delMonster(strongestMonster);
         }
     } else if (ret == -1) {
-        std::cout << "You have been beaten by the " << strongestMonster->getName() << std::endl;
-        std::cout << "Your final score is: " << player.getScore() << std::endl;
-        std::cout << "Thanks for playing! Goodbye!" << std::endl;
+        cout << "You have been beaten by the " << strongestMonster->getName() << std::endl;
+        cout << "Your final score is: " << player.getScore() << std::endl;
+        cout << "Thanks for playing! Goodbye!" << std::endl;
         exit(0);
     }
 }
@@ -306,12 +304,13 @@ int main() {
         DescribeLocation(player);
         DescribeExits(player);
         DescribeLocationItems(player.getCurrentLocation());
-        std::cout << ">";
+        cout << ">";
 
         std::cin >> command;
+        fout << command << std::endl;
         if (command == "quit") {
-            std::cout << "Your final score is: " << player.getScore() << std::endl;
-            std::cout << "Thanks for playing! Goodbye!" << std::endl;
+            cout << "Your final score is: " << player.getScore() << std::endl;
+            cout << "Thanks for playing! Goodbye!" << std::endl;
             break;
         } else if (command == "e" || command == "w" || command == "n" || command == "s") {
             // 如果有合法的方向输入，移动到新的位置
@@ -320,10 +319,10 @@ int main() {
             if (newLocation != nullptr) {
                 player.setCurrentLocation(newLocation);
             } else {
-                std::cout << "Invalid direction! Please try again." << std::endl;
+                cout << "Invalid direction! Please try again." << std::endl;
             }
         } else if (command == "collect") {
-            std::cout << "Collecting items." << std::endl;
+            cout << "Collecting items." << std::endl;
             collect(player);
         } else if (command == "inventory" || command == "inv") {
             player.displayItems();
@@ -335,7 +334,7 @@ int main() {
         } else if (command == "fight") {
             fight(player);
         } else {
-            std::cout << "Invalid direction! Please try again.." << std::endl;
+            cout << "Invalid direction! Please try again.." << std::endl;
         }
     }
 }
