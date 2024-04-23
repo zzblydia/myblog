@@ -174,9 +174,12 @@ int Player::combat(Character *character) {
         round++;
         cout << "-------------------" << std::endl;
         cout << "Round " << round << std::endl;
+        fout << "player hitPoints: " << getHitPoints() << std::endl;
+        fout << "monster hitPoints: " << character->getHitPoints() << std::endl;
 
         // Monster attacks first
         int monsterDamage = rollDice() * 2;
+        fout << "monsterDamage: " << monsterDamage << std::endl;
         takeHit(monsterDamage);
 
         if (getHitPoints() <= 0) {
@@ -186,6 +189,8 @@ int Player::combat(Character *character) {
 
         // Player strikes back
         int playerDamage = rollDice() + maxWeaponPower;
+        fout << "playerDamage: " << playerDamage << std::endl;
+
         // Apply player's damage to the monster
         int monsterHitPoints = character->getHitPoints() - playerDamage;
         character->setHitPoints(monsterHitPoints);
@@ -195,6 +200,7 @@ int Player::combat(Character *character) {
             cout << getHitPoints() << " " << character->getHitPoints() << std::endl;
             return 1;
         }
+        cout << getHitPoints() << " " << character->getHitPoints() << std::endl;
     }
     return 0;
 }

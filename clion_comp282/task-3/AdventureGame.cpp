@@ -1,10 +1,24 @@
 #include <iostream>
+#include <ctime>
 #include "Location.h"
 #include "Character.h"
 
+void PrintTime() {
+    time_t now = time(0);
+    // format to 2021-09-01 12:00:00
+    struct tm *timeinfo;
+    timeinfo = localtime(&now);
+    char buffer[80];
+    strftime(buffer, 80, "%Y-%m-%d %H:%M:%S", timeinfo);
+    fout << std::endl;
+    fout << "----------------------------------" << std::endl;
+    fout << "Current time: " << buffer << std::endl;
+}
+
 void Welcome(Player &player, std::vector<Location *> &locations) {
     // Function to welcome the player
-    cout << "Welcome to the Adventure Game. The aim is to defeat to Boss, but your score points for defeating monsters along th way." << std::endl;
+    cout << "Welcome to the Adventure Game. The aim is to defeat to Boss, ";
+    cout << "but your score points for defeating monsters along th way." << std::endl;
     cout << "You can use the commands:" << std::endl;
     cout << "n, s, e, w, inventory, drink, collect, fight, quit." << std::endl << std::endl;
 }
@@ -152,6 +166,8 @@ void fight(Player &player) {
 }
 
 int main() {
+    PrintTime();
+
     // Create locations
     Location cave, temple, dungeon, castle, clearing, hall, garden, library, forest, house, ruins, field;
 
