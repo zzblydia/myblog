@@ -10,8 +10,10 @@ private:
 
 public:
     Item(std::string name);
+
     std::string getName() const;
-    void setName(const std::string& newName);
+
+    void setName(const std::string &newName);
 };
 
 class Potion : public Item {
@@ -20,7 +22,9 @@ private:
 
 public:
     Potion(std::string name, int strength);
+
     int getStrength() const;
+
     void setStrength(int newStrength);
 };
 
@@ -30,7 +34,9 @@ private:
 
 public:
     Weapon(std::string name, int power);
+
     int getPower() const;
+
     void setPower(int newPower);
 };
 
@@ -40,8 +46,19 @@ private:
 
 public:
     Treasure(std::string name, int value);
+
     int getValue() const;
+
     void setValue(int newValue);
+};
+
+class armour : public Item {
+private:
+    int protection;
+public:
+    armour(std::string name, int protection);
+    int getProtection() const;
+    void setProtection(int newProtection);
 };
 
 #endif

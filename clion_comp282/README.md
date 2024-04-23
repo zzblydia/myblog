@@ -324,6 +324,7 @@ Modify the game so that when a monster is defeated, their items become available
 Create a new child class of Item called Armour.
 Add at least 5 examples of armour into the game. Some examples:
 ringmail, chainmail, shield, breastplate, helmet, gauntlet.
+
 As well as name and description, the Armour class should have a member variable called
 protection. You can decide values for this. But make sure that you put the gauntlet, with a protection of 2, in the library. Armour reduces the effect of damage
 inflicted on the character. All Character objects should have the ability to use armour, so
@@ -335,4 +336,7 @@ possession.
 
 创建一个名为Armour的Item子类。
 在游戏中添加至少5个护甲的例子。一些例子包括：环甲、锁子甲、盾牌、胸甲、头盔、护手。
-除了名称和描述外，Armour类应该有一个名为protection的成员变量。你可以决定其值。但确保将护手（protection为2）放在图书馆中。护甲可以减少对角色造成的伤害。所有Character对象应该有使用护甲的能力，因此应该在Character（父类）级别实现。当玩家输入inv或inventory时，所有护甲物品应该列给用户看。修改战斗规则，使得在战斗中，敌人对玩家造成的伤害会减少一个随机数，该随机数的范围在0到玩家所有护甲的总保护值之间。
+除了名称和描述外，Armour类应该有一个名为protection的成员变量。你可以决定其值。但确保将护手（protection为2）放在图书馆中。护甲可以减少对角色造成的伤害。
+所有Character对象应该有使用护甲的能力，因此应该在Character（父类）级别实现。
+当玩家输入inv或inventory时，所有护甲物品应该列给用户看。
+修改战斗规则，使得在战斗中，敌人对玩家造成的伤害会减少一个随机数，该随机数的范围在0到玩家所有护甲的总保护值之间。

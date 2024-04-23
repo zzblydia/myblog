@@ -3,6 +3,7 @@
 
 // Item methods
 Item::Item(std::string name) : name(name) {}
+
 std::string Item::getName() const {
     return name;
 }
@@ -42,4 +43,21 @@ int Treasure::getValue() const {
 
 void Treasure::setValue(int newValue) {
     value = newValue;
+}
+
+// armour methods
+armour::armour(std::string name, int protection) : Item(name) {
+    if (name == "gauntlet") {
+        this->protection = 2;
+    } else {
+        this->protection = protection;
+    }
+}
+
+int armour::getProtection() const {
+    return protection;
+}
+
+void armour::setProtection(int newProtection) {
+    protection = newProtection;
 }

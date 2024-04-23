@@ -13,6 +13,7 @@ class Character {
 private:
     std::string name;
     int hitPoints;
+    std::vector<armour*> armours;
 
 public:
     Character();
@@ -21,6 +22,8 @@ public:
     std::string getName() const;
     void setHitPoints(int newHitPoints);
     int getHitPoints() const;
+    void addArmour(armour* armour);
+    std::vector<armour*> getArmours() const;
 };
 
 class Monster : public Character {

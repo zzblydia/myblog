@@ -30,6 +30,14 @@ int Character::getHitPoints() const {
     return hitPoints;
 }
 
+void Character::addArmour(armour *armour) {
+    armours.push_back(armour);
+}
+
+std::vector<armour *> Character::getArmours() const {
+    return armours;
+}
+
 // Implement Monster class methods
 Monster::Monster() {
     Character();
