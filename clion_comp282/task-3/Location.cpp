@@ -53,14 +53,14 @@ std::vector<Character *> Location::getMonsters() const {
 void Location::getExits() const {
     // Code to display list of exits to the player
     for (size_t i = 0; i < exits.size(); ++i) {
-        cout << exits[i].first;
+        std::cout << exits[i].first;
         if (i < exits.size() - 1) {
-            cout << ", ";
+            std::cout << ", ";
         } else {
-            cout << ".";
+            std::cout << ".";
         }
     }
-    cout << std::endl;
+    std::cout << std::endl;
 }
 
 Location *Location::getExit(char direction) {

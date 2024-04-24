@@ -4,11 +4,6 @@
 
 #include <string>
 
-#include "debug.h"
-//using std::cout;
-using file::cout; // 写到文件和屏幕
-using file::fout; // 写到文件
-
 class Item {
 private:
     std::string name;
