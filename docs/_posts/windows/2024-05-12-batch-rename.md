@@ -3,7 +3,6 @@ title:  "batch rename files"
 date:   2024-05-12 08:05:00 +0800
 last_modified_at: 2024-05-12 15:48:00 +0800
 categories: windows
-tags: rename
 ---
 
 # bat脚本批量重命名  
