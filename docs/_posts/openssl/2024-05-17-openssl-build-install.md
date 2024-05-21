@@ -33,6 +33,7 @@ make
 make test
 sudo make install
 ```
+<!--
 | Configure options        | 说明              
 |:-------------------------|:------------------  
 | ./Configure              | 与./config效果相同  
@@ -44,7 +45,16 @@ sudo make install
 | no-asm                   | 不使用汇编  
 | no-shared                | 不生成动态库  
 | -g3                      | gcc编译选项, 表示生成最多的调试信息, 会覆盖-g(默认值-g2)  
-
+-->
+Configure options说明:  
+1) 当前版本使用./Configure, 与./config效果相同.  
+2) --openssldir 用于存放配置文件, 以及默认证书和密钥存储. 默认值(Unix:/usr/local/ssl)  
+3) --prefix 进程, 库, 头文件安装目录. 默认值(Unix:/usr/local)  
+4) --debug 调试版本, 带符号表和不优化编译  
+5) --with-zlib-include=DIR --with-zlib-lib=LIB 连接zlib库  
+6) no-asm 不适用汇编  
+7) no-shared 不生成动态库  
+8) -g3 gcc编译选项, 表示生成最多的调试信息, 会覆盖-g(默认值-g2)  
 
 3. 添加环境变量  
 ```
