@@ -35,5 +35,16 @@ poll一个context时, 多个连接的回调事件是如何处理的?
 &nbsp;
 
 8) LWS_CALLBACK_PROTOCOL_INIT  
-如果直接进行连接, 则在lws_client_connect_via_info中产生回调  
-否则在lws_service_adjust_timeout中产生回调  
+如果直接进行连接, 则在`lws_client_connect_via_info`中产生回调  
+否则在`lws_service_adjust_timeout`中产生回调  
+&nbsp;
+
+9) lws_service立刻返回
+业务场景有多个context在同一个线程里依次poll,如果没有事件需要立即返回.  
+此时通过设置`lws_service(context, -1);`实现  
+&nbsp;
+
+10) lws_client_connect_via_info的调用时机  
+可以在`lws_create_context`之后调用, 也可以在`LWS_CALLBACK_PROTOCOL_INIT`里调用  
+二者有什么讲究呢?  
+目前看需要自动重连, 则可以放在`LWS_CALLBACK_PROTOCOL_INIT`里  

@@ -12,7 +12,7 @@
 [libwebsockets-IP-address-mismatch](https://zzblydia.github.io/myBlog/websocket/IP-address-mismatch/)  
 
 ### 2. debian
-[debian11.8 install](https://zzblydia.github.io/myBlog/debian/debian11.8-new-install-config/)  
+[debian11.8 install init](https://zzblydia.github.io/myBlog/debian/debian11.8-new-install-config/)  
 
 ### 3. windows
 [get timestamp on windows](https://zzblydia.github.io/myBlog/windows/get_timestamp/)  
@@ -23,3 +23,7 @@
 ### 4. openssl
 [openssl-command-line](https://zzblydia.github.io/myBlog/openssl/openssl-command-line/)  
 [openssl-build-install-on-ubuntu](https://zzblydia.github.io/myBlog/openssl/openssl-build-install/)  
+[openssl-build-install-on-debian11.8](https://github.com/zzblydia/myBlog/blob/master/linux/openssl/openssl_install_debian.sh)  
+
+### 5. git
+[git-commands](https://zzblydia.github.io/myBlog/git/git-command/)  
