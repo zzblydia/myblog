@@ -1,8 +1,11 @@
-# 简介  
+# welcome  
+[English](README.md) | [Chinese](README_zh.md)  
+
+## 简介  
 2024年, 工作的第9年, 阶段性的总结个人探索的领域. 本仓库主要用于记录兴趣和工作.  
 
 ## 个人博客  
-[My Code Home](https://zzblydia.github.io/myBlog/)  
+请访问我的个人博客[My Code Home](https://zzblydia.github.io/myBlog/)  
 
 
 ## 主要内容:  
@@ -27,3 +30,9 @@
 
 ### 5. git
 [git-commands](https://zzblydia.github.io/myBlog/git/git-command/)  
+
+### 6. cmake
+[cmake_install_debian11.8](https://github.com/zzblydia/myBlog/blob/master/linux/cmake/cmake_install_debian11.8.sh)  
+
+### 7. gdb
+[gdb commands](https://zzblydia.github.io/myBlog/gdb/gdb-commands/)  

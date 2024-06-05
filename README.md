@@ -30,3 +30,9 @@
 
 ### 5. git
 [git-commands](https://zzblydia.github.io/myBlog/git/git-command/)  
+
+### 6. cmake
+[cmake_install_debian11.8](https://github.com/zzblydia/myBlog/blob/master/linux/cmake/cmake_install_debian11.8.sh)  
+
+### 7. gdb
+[gdb commands](https://zzblydia.github.io/myBlog/gdb/gdb-commands/)  
