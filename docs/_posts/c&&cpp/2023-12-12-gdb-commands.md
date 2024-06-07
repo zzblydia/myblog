@@ -7,6 +7,7 @@ tags: gdb
 ---
 
 # some notes of gdb  
+
 The explanations are provided by ChatGPT-4o.  
 
 ## attach  
