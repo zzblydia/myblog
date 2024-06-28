@@ -27,6 +27,7 @@ int lws_server_callback_established(struct lws *wsi, void *user) {
         lwsl_wsi_err(wsi, "data is NULL");
         return -1;
     }
+    data->msg_count = 0;
 
     int ret = lws_GetAddrInfo(wsi, 1, data->ip, &data->port);
     if (ret != 0) {
@@ -37,30 +38,38 @@ int lws_server_callback_established(struct lws *wsi, void *user) {
     return 0;
 }
 
-static int server_simple_callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
+int lws_server_callback_receive(struct lws *wsi, void *user, void *in, size_t len) {
     struct session_data *data = (struct session_data *) user;
+    if (data == NULL) {
+        lwsl_wsi_err(wsi, "data is NULL");
+        return -1;
+    }
+
+    // 以收到的第一条消息决定业务类型
+    if (data->msg_count == 0) {
+
+    }
+
+    data->msg_count++;
+    return 0;
+}
+
+int lws_server_callback_write(struct lws *wsi, void *user, void *in, size_t len) {
+    return 0;
+}
+
+
+static int
+server_service_callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
     switch (reason) {
         case LWS_CALLBACK_ESTABLISHED:
             lws_server_callback_established(wsi, user);
             break;
-        case LWS_CALLBACK_RECEIVE:           // 当接收到客户端发来的数据以后
-            // 下面的调用禁止在此连接上接收数据
-            //lws_rx_flow_control(wsi, 0);
-
-            // 保存客户端发来的消息
-            memcpy(&data->buf[LWS_PRE], in, len);
-            data->len = (int) len;
-            lwsl_notice("received message:%s\n", (char *) &data->buf[LWS_PRE]);
-
-            // 触发一次写回调, 给客户端应答
-            lws_callback_on_writable(wsi);
+        case LWS_CALLBACK_RECEIVE:
+            lws_server_callback_receive(wsi, user, in, len);
             break;
-        case LWS_CALLBACK_SERVER_WRITEABLE:   // 当此连接可写时
-            lwsl_notice("send back message:%s\n", (char *) &data->buf[LWS_PRE]);
-            lws_write(wsi, &data->buf[LWS_PRE], (size_t) data->len, LWS_WRITE_TEXT);
-
-            // 下面的调用允许在此连接上接收数据
-            // lws_rx_flow_control(wsi, 1);
+        case LWS_CALLBACK_SERVER_WRITEABLE:
+            lws_server_callback_write(wsi, user, in, len);
             break;
         default:
             break;
@@ -71,7 +80,7 @@ static int server_simple_callback(struct lws *wsi, enum lws_callback_reasons rea
 
 struct lws_protocols protocols[] = {
         {
-                "ws", server_simple_callback, sizeof(struct session_data), MAX_PAYLOAD_SIZE, 0, NULL, 0
+                "ws", server_service_callback, sizeof(struct session_data), MAX_PAYLOAD_SIZE, 0, NULL, 0
         },
         LWS_PROTOCOL_LIST_TERM
 };
