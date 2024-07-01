@@ -6,4 +6,6 @@
 // direction: 0 for self, 1 for peer
 int ws_GetAddrInfo(int fd, int direction, char *ip, unsigned short *port);
 
+int ws_GenerateTraceId(char *traceId, int len);
+
 #endif //WS_TOOLS_H

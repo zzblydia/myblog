@@ -15,10 +15,16 @@ int lws_server_callback_established(struct lws *wsi, void *user) {
 
     int ret = ws_GetAddrInfo(fd, 1, data->ip, &data->port);
     if (ret != 0) {
-        lwsl_wsi_err(wsi, "lws_server_GetClientInfo failed");
+        lwsl_wsi_err(wsi, "lws_server_GetClientInfo failed ret %d", ret);
         return -1;
     }
-    lwsl_wsi_user(wsi, "client from %s:%u", data->ip, data->port);
+
+    ret = ws_GenerateTraceId(data->traceId, sizeof(data->traceId));
+    if (ret != 0) {
+        lwsl_wsi_err(wsi, "ws_GenerateTraceId failed ret %u", ret);
+        return -1;
+    }
+    lwsl_wsi_user(wsi, "client from %s:%u, traceId %s", data->ip, data->port, data->traceId);
     return 0;
 }
 
