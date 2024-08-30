@@ -19,11 +19,10 @@ This is particularly useful for debugging complex configurations and understandi
 
 3> **cmake .. -DCMAKE_BUILD_TYPE=type**  
 This option sets the build type, which can affect compiler flags and optimizations. Common values for `type` include:  
-
-(1)Debug: Enables debugging information and disables optimizations. (maybe **-g**)  
-(2)Release: Enables optimizations and disables debugging information. (maybe **-O3 -DNDEBUG**)  
-(3)RelWithDebInfo: Combines optimization with debugging information. (maybe **-O2 -g -DNDEBUG**)  
-(4)MinSizeRel: Optimizes for minimum size. (maybe **-Os -DNDEBUG**)  
+(1)**Debug**: Enables debugging information and disables optimizations. (maybe **-g**)  
+(2)**Release**: Enables optimizations and disables debugging information. (maybe **-O3 -DNDEBUG**)  
+(3)**RelWithDebInfo**: Combines optimization with debugging information. (maybe **-O2 -g -DNDEBUG**)  
+(4)**MinSizeRel**: Optimizes for minimum size. (maybe **-Os -DNDEBUG**)  
 
 ## 2. Reference  
 [cmake latest document](https://cmake.org/cmake/help/latest/manual/cmake.1.html)

@@ -1,7 +1,7 @@
 ---
 title:  "gdb commands"
 date:   2023-12-12 06:33:33 +0800
-last_modified_at: 2024-06-06 06:41:00 +0800
+last_modified_at: 2024-08-31 20:41:00 +0800
 categories: gdb
 tags: gdb
 ---
@@ -85,3 +85,9 @@ x: 这是 gdb 中的“检查内存”（examine memory）命令。
 /200: 这是一个可选的重复计数，表示要显示的内存单元的数量。在这个例子中，200 表示要显示 200 个内存单元。  
 b: 这是一个格式说明符，表示每个内存单元的大小。b 代表字节（byte）。  
 x: 这是另一个格式说明符，表示内存单元的显示格式。x 代表十六进制（hexadecimal）  
+
+## catch  
+```
+catch syscall exit_group
+```
+exit_group是Linux系统中的一个系统调用，用于终止当前进程及其所有线程。通过捕获这个系统调用，你可以观察到程序何时准备退出.  
