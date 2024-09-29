@@ -48,3 +48,25 @@ poll一个context时, 多个连接的回调事件是如何处理的?
 可以在`lws_create_context`之后调用, 也可以在`LWS_CALLBACK_PROTOCOL_INIT`里调用  
 二者有什么讲究呢?  
 目前看需要自动重连, 则可以放在`LWS_CALLBACK_PROTOCOL_INIT`里  
+&nbsp;
+
+11) 使用域名连接服务器时, 会在每次连接时向dns服务器发送请求  
+并发量比较高时, 可能dns服务器会响应错误或者响应不及时.
+另外调用查询dns时调用系统函数getaddrinfo(底层调用poll,可用strace跟踪发现)会阻塞.
+```
+#0 getaddrinfo
+#1 lws_getaddrinfo46
+#2 lws_client_connect_2_dnsreq  
+```
+
+12) 生产环境使用的cmake编译选项  
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=ON  
+不使用-DCMAKE_BUILD_TYPE=DEBUG是因为不使用断言assert  
+不使用-DCMAKE_BUILD_TYPE=RELEASE是因为编译选项(可能)会启用-O3优化且不带-g(使用strip剥离调试信息)  
+使用-DCMAKE_BUILD_TYPE=RelWithDebInfo的(可能的)编译选项为-O2 -g  
+&nbsp;
+
+13) wsi双重释放导致进程core  
+触发场景:在回调函数收到LWS_CALLBACK_CLIENT_CONNECTION_ERROR事件时调用lws_context_destroy  
+
+
