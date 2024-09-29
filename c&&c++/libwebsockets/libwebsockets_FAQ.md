@@ -69,4 +69,7 @@ cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=ON
 13) wsi双重释放导致进程core  
 触发场景:在回调函数收到LWS_CALLBACK_CLIENT_CONNECTION_ERROR事件时调用lws_context_destroy  
 
+14) 以域名的方式连接服务器时, 存在频繁请求dns的问题.  
+-DLWS_WITH_SYS_ASYNC_DNS的作用有待研究.  
+
 
