@@ -3,6 +3,7 @@ title:  "openssl-build-install-on-ubuntu"
 date:   2024-05-17 21:17:00 +0800
 last_modified_at: 2024-05-18 01:22:00 +0800
 categories: openssl
+tag: openssl
 ---
 
 # openssl-3.0.12 源码安装 on ubuntu24.04  

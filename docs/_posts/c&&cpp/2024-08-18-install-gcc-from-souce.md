@@ -6,7 +6,7 @@ categories: gcc
 tags: gcc7.3.0
 ---
 
-# install gcc 7.3.0 from souce on debian 12.4  
+# install gcc 7.3.0 from souce  
 
 ## 1. Some notes on compiling  
 1> Some [dependencies](https://gcc.gnu.org/install/prerequisites.html) are necessary for compiling.  
