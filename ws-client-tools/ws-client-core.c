@@ -1,14 +1,19 @@
 #include "ws-client-interface.h" // for WstClient
-#include "ws-tools.h"
+#include "ws-utils.h"
 #include "ws-client-core.h"
 
-struct lws_protocols g_protocols[] = {
-        {
-                //协议名称，协议回调，接收缓冲区大小
-                "ws", ws_client_callback, sizeof(struct session_data),
-                MAX_PAYLOAD_SIZE, 0, NULL, 0
-        },
-        LWS_PROTOCOL_LIST_TERM
+#define MAX_PAYLOAD_SIZE 10240
+#define TRACE_ID_MAX_LEN (32 + 1)
+
+struct session_data {
+    int msg_count;
+    unsigned char buf[LWS_PRE + MAX_PAYLOAD_SIZE];
+    int len;
+
+    char ip[INET6_ADDRSTRLEN]; // 用户客户端或者服务端, 记录客户端的ip和port
+    unsigned short port;
+
+    char traceId[TRACE_ID_MAX_LEN];
 };
 
 int ws_client_callback_protocol_init(struct lws *wsi, void *user) {
@@ -33,7 +38,6 @@ int ws_client_callback_protocol_init(struct lws *wsi, void *user) {
                 LCCSCF_ALLOW_INSECURE;
     }
 
-    // 创建一个客户端连接
     lws_client_connect_via_info(&conn_info);
     return WST_SUCCESSFUL;
 }
@@ -58,3 +62,56 @@ int ws_client_callback_established(struct lws *wsi, void *user) {
     lwsl_wsi_user(wsi, "client with %s:%u", data->ip, data->port);
     return WST_SUCCESSFUL;
 }
+
+int ws_client_callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
+    struct session_data *data = (struct session_data *) user;
+    struct lws_context *context = lws_get_context(wsi);
+    lwsl_cx_user(context, "reason %d", reason);
+
+    switch (reason) {
+        case LWS_CALLBACK_PROTOCOL_INIT:
+            ws_client_callback_protocol_init(wsi, user);
+            break;
+        case LWS_CALLBACK_CLIENT_ESTABLISHED:   // 连接到服务器后的回调
+            ws_client_callback_established(wsi, user);
+            break;
+        case LWS_CALLBACK_CLIENT_RECEIVE:       // 接收到服务器数据后的回调，数据为in，其长度为len
+            lwsl_notice("receive: %s\n", (char *) in);
+            break;
+        case LWS_CALLBACK_CLIENT_WRITEABLE:     // 当此客户端可以发送数据时的回调
+            if (data->msg_count < 3) {
+                // 前面LWS_PRE个字节必须留给LWS
+                memset(data->buf, 0, sizeof(data->buf));
+                char *msg = (char *) &data->buf[LWS_PRE];
+                data->len = sprintf(msg, "hello %d", data->msg_count);
+                lwsl_notice("send: %s\n", msg);
+
+                // 通过WebSocket发送文本消息
+                lws_write(wsi, &data->buf[LWS_PRE], (size_t) data->len, LWS_WRITE_TEXT);
+
+                data->msg_count++;
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+int http_client_callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
+    struct lws_context *context = lws_get_context(wsi);
+    lwsl_cx_user(context, "reason %d", reason);
+    return 0;
+}
+
+struct lws_protocols g_protocols[] = {
+        {
+                "ws", ws_client_callback, sizeof(struct session_data),
+                MAX_PAYLOAD_SIZE, 0, NULL, 0
+        },
+        {
+                "http", http_client_callback, sizeof(struct session_data),
+                MAX_PAYLOAD_SIZE, 0, NULL, 0
+        },
+        LWS_PROTOCOL_LIST_TERM
+};

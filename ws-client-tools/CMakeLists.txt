@@ -6,7 +6,7 @@ include(CheckCSourceCompiles)
 include(LwsCheckRequirements)
 
 set(SAMP ws-client-tools)
-set(SRCS ws-main.c ws-client-interface.c ws-client-core.c ws-tools.c)
+set(SRCS ws-client-main.c ws-client-interface.c ws-client-core.c ws-utils.c)
 
 set(requirements 1)
 require_lws_config(LWS_ROLE_WS 1 requirements)

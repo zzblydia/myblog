@@ -3,40 +3,7 @@
 
 #define LOG_PATH_LEN 128
 
-int ws_client_callback(struct lws *wsi, enum lws_callback_reasons reason, void *user, void *in, size_t len) {
-    struct session_data *data = (struct session_data *) user;
-    switch (reason) {
-        case LWS_CALLBACK_PROTOCOL_INIT:
-            ws_client_callback_protocol_init(wsi, user);
-            break;
-        case LWS_CALLBACK_CLIENT_ESTABLISHED:   // 连接到服务器后的回调
-            ws_client_callback_established(wsi, user);
-            break;
-        case LWS_CALLBACK_CLIENT_RECEIVE:       // 接收到服务器数据后的回调，数据为in，其长度为len
-            lwsl_notice("receive: %s\n", (char *) in);
-            break;
-        case LWS_CALLBACK_CLIENT_WRITEABLE:     // 当此客户端可以发送数据时的回调
-            if (data->msg_count < 3) {
-                // 前面LWS_PRE个字节必须留给LWS
-                memset(data->buf, 0, sizeof(data->buf));
-                char *msg = (char *) &data->buf[LWS_PRE];
-                data->len = sprintf(msg, "hello %d", data->msg_count);
-                lwsl_notice("send: %s\n", msg);
-
-                // 通过WebSocket发送文本消息
-                lws_write(wsi, &data->buf[LWS_PRE], (size_t) data->len, LWS_WRITE_TEXT);
-
-                data->msg_count++;
-            }
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-
-
-int WstInit(WstClient *client) {
+int WstInit() {
     int logLevel = LLL_USER | LLL_ERR | LLL_WARN | LLL_NOTICE;
 
     // 获取环境变量, 设置日志级别
@@ -51,7 +18,6 @@ int WstInit(WstClient *client) {
     lws_set_log_level(logLevel, NULL);
     return WST_SUCCESSFUL;
 }
-
 
 int WstConnect(WstClient *wstClient) {
     if (wstClient == NULL) {
@@ -86,6 +52,16 @@ int WstConnect(WstClient *wstClient) {
         return WST_CREATE_CONTEXT_FAILED;
     }
     wstClient->context = context;
+    return WST_SUCCESSFUL;
+}
+
+int WstPoll(WstClient *wstClient) {
+    if (wstClient == NULL || wstClient->context == NULL) {
+        lwsl_err("wstClient is NULL\n");
+        return WST_INPUT_NULL;
+    }
+
+    lws_service(wstClient->context, 0);
     return WST_SUCCESSFUL;
 }
 

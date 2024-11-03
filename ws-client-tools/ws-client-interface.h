@@ -1,11 +1,11 @@
 #ifndef WS_CLIENT_INTERFACE_H
 #define WS_CLIENT_INTERFACE_H
 
-typedef int (*EventCallback)(short callbackIndex, int msgType);
+typedef int (*EventCallback)(unsigned short callbackIndex, int msgType);
 
 #define WS_GENERAL_LEN 128
 typedef struct {
-    short callbackIndex;
+    unsigned short callbackIndex;
 
     char clientIp[WS_GENERAL_LEN];
     unsigned short clientPort;
@@ -28,9 +28,18 @@ typedef enum {
     WST_BUTT,
 } ErrorCode;
 
-int WstInit(WstClient *client);
+typedef enum {
+    WST_MSGTYPE_CONNECT_SUCCESS,
+    WST_MSGTYPE_CONNECT_ERROR,
+    WST_MSGTYPE_RECEIVED,
+    WST_MSGTYPE_WRITEABLE
+} WstClientMsgType;
+
+int WstInit();
 
 int WstConnect(WstClient *client);
+
+int WstPoll(WstClient *client);
 
 int WstSend(WstClient *wstClient);
 

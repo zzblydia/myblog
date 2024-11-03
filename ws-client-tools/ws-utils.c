@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #endif
 
-#include "ws-tools.h"
+#include "ws-utils.h"
 
 // GetAddrInfo在windows下重名
 int ws_GetAddrInfo(int fd, int direction, char *ip, unsigned short *port) {
