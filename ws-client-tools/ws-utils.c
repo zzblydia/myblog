@@ -41,3 +41,8 @@ int ws_GetAddrInfo(int fd, int direction, char *ip, unsigned short *port) {
     }
     return 0;
 }
+
+void log2file(int level, const char *line)
+{
+    printf("log2file: level=%d, line=%s", level, line);
+}
