@@ -10,8 +10,7 @@
 #include "mrcp_asr_server.h"
 
 #define SERVER_ADDRESS "127.0.0.1"
-#define SERVER_PORT 8080
-#define BUFFER_SIZE 1024
+#define SERVER_PORT 9000
 
 void print_client_info(int client_sock) {
     // get ip and port of client
@@ -38,8 +37,11 @@ void *handle_client(void *client_sock_ptr) {
     free(client_sock_ptr); // 释放动态分配的内存
 
     int read_size;
+    char buffer[BUFFER_SIZE];
     while (1) {
-        char buffer[BUFFER_SIZE] = {0};
+        // 清空缓冲区
+        memset(buffer, 0, sizeof(buffer));
+        
         read_size = recv(client_sock, buffer, sizeof(buffer), 0);
         if (read_size == 0) {
             break; // 客户端断开连接
@@ -48,12 +50,7 @@ void *handle_client(void *client_sock_ptr) {
             break;
         }
 
-        char response[BUFFER_SIZE] = {0};
-        int len = request_and_response(client_sock, buffer, read_size, response);
-        send(client_sock, response, len, 0);
-
-        // 清空缓冲区
-        memset(buffer, 0, sizeof(buffer));
+        request_and_response(client_sock, buffer, read_size);
     }
 
     // 关闭客户端Socket
@@ -61,7 +58,7 @@ void *handle_client(void *client_sock_ptr) {
     return NULL;
 }
 
-int main() {
+int main(int argc, char *argv[]) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1) {
         printf("socket create failed errno %d\n", errno);
@@ -70,8 +67,20 @@ int main() {
 
     struct sockaddr_in server_addr = {0};
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERVER_PORT);
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
+    char* addr;
+    if (argc > 1 && strlen(argv[1]) > 0) {
+        server_addr.sin_addr.s_addr = inet_addr(argv[1]);
+        addr = argv[1];
+    } else {
+        server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDRESS);
+        addr = SERVER_ADDRESS;
+    }
+    if (argc > 2) {
+        server_addr.sin_port = htons(atoi(argv[2]));
+    } else {
+        server_addr.sin_port = htons(SERVER_PORT);
+    }
+
     if (bind(sock, (struct sockaddr *) &server_addr, sizeof(server_addr)) == -1) {
         perror("bind failed");
         close(sock);
@@ -84,7 +93,7 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    printf("Server is listening on %s:%d\n", SERVER_ADDRESS, SERVER_PORT);
+    printf("Server is listening on %s:%d\n", addr, SERVER_PORT);
 
     while (1) {
         // 接受连接
