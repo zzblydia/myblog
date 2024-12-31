@@ -60,15 +60,24 @@ poll一个context时, 多个连接的回调事件是如何处理的?
 ```
 
 12) 生产环境使用的cmake编译选项  
-cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=ON  
+cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_VERBOSE_MAKEFILE=ON -DLWS_WITH_SYS_ASYNC_DNS=ON -DLWS_IPV6=ON  
 不使用-DCMAKE_BUILD_TYPE=DEBUG是因为不使用断言assert  
 不使用-DCMAKE_BUILD_TYPE=RELEASE是因为编译选项(可能)会启用-O3优化且不带-g(使用strip剥离调试信息)  
 使用-DCMAKE_BUILD_TYPE=RelWithDebInfo的(可能的)编译选项为-O2 -g  
+使用-DLWS_WITH_SYS_ASYNC_DNS=ON, 启用异步dns解析. 否则配置域名连接服务器, 解析域名时会阻塞.  
+使用-DLWS_IPV6=ON, 启用ipv6支持.
 &nbsp;
 
 13) wsi双重释放导致进程core  
 触发场景:在回调函数收到LWS_CALLBACK_CLIENT_CONNECTION_ERROR事件时调用lws_context_destroy  
+&nbsp;
 
 14) 以域名的方式连接服务器时, 存在频繁请求dns的问题.  
--DLWS_WITH_SYS_ASYNC_DNS的作用有待研究.  
+-DLWS_WITH_SYS_ASYNC_DNS=ON 发布分支不支持处理/etc/hosts中的域名映射.  
+启用选项后, 是否会缓存dns解析? 缓存的时间是多久?  
+&nbsp;
 
+15) 性能场景下, 连接失败, 如何获取连接时的客户端端口?  
+连接失败时, 可能是服务端服务没开启, 也可能是网络不通.
+在客户端tcpdump抓包后分析异常时, 需要客户端显示建立tcp连接, http连接等.  
+&nbsp;
