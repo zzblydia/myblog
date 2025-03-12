@@ -91,3 +91,9 @@ x: 这是另一个格式说明符，表示内存单元的显示格式。x 代表
 catch syscall exit_group
 ```
 exit_group是Linux系统中的一个系统调用，用于终止当前进程及其所有线程。通过捕获这个系统调用，你可以观察到程序何时准备退出.  
+
+## batch  
+```
+gdb --batch -ex "p g_times" -p PID  
+```
+
