@@ -2,7 +2,13 @@
 [English](README.md) | [Chinese](README_zh.md)  
 
 ## Introduction  
-*2024, The 9th year of my career, I conducted a phased summary of my personal exploration in the field.*  
+*In 2025, my 10th year of work, I’m summing up the areas I’ve explored. This repository is for tracking my interests and job stuff.*  
+
+*GitHub Pages gives free storage and hosting, and I like using it to save my work experiences in simple summaries.*  
+
+*I don’t mind if the domain is hard to reach or if the blog looks basic.*  
+
+*What’s important is writing—looking back at history, sorting through it all. So many blog links don’t work anymore.*  
 
 ## personal blog  
 *Please visit my blog [My Code Home](https://zzblydia.github.io/myBlog/)*  

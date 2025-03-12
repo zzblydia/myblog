@@ -21,10 +21,9 @@ netstat -tunlp | grep 53
 ip rule help  
 ip rule show/list  
 ```
-0:      from all lookup local   # 255 local table  
-32766:  from all lookup main    # 254 main table 
-32767:  from all lookup default # 253 default table
-
+0:      from all lookup local   # priority 0, highest levle, 255 local table  
+32766:  from all lookup main    # priority 32766, 254 main table, route -n  
+32767:  from all lookup default # priority 32767, 253 default table  
 ```
 
 ip rule add from 192.168.23.62/24 dev eth1 table 238  
