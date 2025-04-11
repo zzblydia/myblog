@@ -4,8 +4,37 @@
 2.转发规则由用户态程序下发并作配置持久化, 每一条转发规则包含 规则id, 数据包类型, 源ip和port, 目的ip和port, 目标ip和port.
 如针对tcp报文, 源ip和port是 192.168.23.1:8023, 目的ip和port是 192.168.23.62:8023的数据, 如果匹配到转发规则, 则转发到192.168.23.62:18023.
 如针对udp报文, 源ip和port是 192.168.23.1:8024, 目的ip和port是 192.168.23.62:8024的数据, 如果匹配到转发规则, 则转发到192.168.23.62:18024.
-*/
 
+ubuntu 24.04
+
+apt install -y clang llvm libbpf-dev
+Ubuntu clang version 18.1.3 (1ubuntu1)
+
+clang -target bpf -O2 -g -I/usr/include/$(uname -m)-linux-gnu/ -c ebpf_tc_ingress_01_kernel.c -o ebpf_tc_ingress_01_kernel.o
+
+sudo tc qdisc add dev ens33 clsact
+sudo tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier
+
+sudo tc qdisc show dev ens33 clsact
+sudo tc filter show dev ens33 ingress
+sudo bpftool prog list | tail
+sudo bpftool prog show name tc_ingress_01_kernel
+
+sudo bpftool map
+sudo bpftool map dump id 145
+sudo bpftool map update name log_enable_map key 0 0 0 0 value 1
+
+sudo bpftool map update name forward_rules key 6 0 0 0 c0 a8 17 01 00 00 1f 57 c0 a8 17 3e 00 00 1f 57 value 1 c0 a8 17 3e 00 00 46 5f
+key：protocol=6 (TCP), src_ip=c0a81701 (192.168.23.1), src_port=1f57 (8023), dst_ip=c0a8173e (192.168.23.62), dst_port=1f47 (8023)。
+value：rule_id=1, target_ip=c0a8173e (192.168.23.62), target_port=465f (18023)
+
+sudo bpftool map update name forward_rules key 17 0 0 0 c0 a8 17 01 00 00 1f 48 c0 a8 17 3e 00 00 1f 48 value 2 c0 a8 17 3e 00 00 46 60
+key：protocol=17 (TCP), src_ip=c0a81701 (192.168.23.1), src_port=1f48 (8024), dst_ip=c0a8173e (192.168.23.62), dst_port=1f48 (8024)。
+value：rule_id=2, target_ip=c0a8173e (192.168.23.62), target_port=4660 (18023)
+
+sudo tc qdisc del dev ens33 clsact
+sudo tc filter del dev ens33 ingress
+*/
 
 #include <linux/bpf.h>
 #include <linux/pkt_cls.h>
@@ -276,20 +305,6 @@ int tc_ingress_01_kernel(struct __sk_buff *skb)
 char _license[] SEC("license") = "GPL";
 
 /*
-ubuntu 24.04
-
-apt install -y clang llvm libbpf-dev
-Ubuntu clang version 18.1.3 (1ubuntu1)
-
-clang -target bpf -O2 -I/usr/include/$(uname -m)-linux-gnu/ -c ebpf_tc_ingress_01_kernel.c -o ebpf_tc_ingress_01_kernel.o
-
-sudo tc qdisc add dev ens33 clsact
-sudo tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier
-
-sudo tc qdisc show dev ens33 clsact
-*/
-
-/*
 tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier 加载报错,没有调试信息
 
 libbpf: BTF is required, but is missing or corrupted.
@@ -299,7 +314,8 @@ Unable to load program
 
 /*
 clang -target bpf -O2 -g -I/usr/include/$(uname -m)-linux-gnu/ -c ebpf_tc_ingress_01_kernel.c -o ebpf_tc_ingress_01_kernel.o
-sudo tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier 加-g调试 加载日志疯狂刷屏
+sudo tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier 
+加-g调试 加载日志疯狂刷屏 加载失败 优化update_l4_checksum函数后解决
 
 libbpf: BTF is required, but is missing or corrupted.
 ERROR: opening BPF object file failed
