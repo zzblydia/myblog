@@ -100,64 +100,46 @@ static __always_inline void update_l4_checksum(struct __sk_buff *skb, struct iph
     __u32 old_ip, __u16 old_port)
 {
     void *data_end = (void *)(long)skb->data_end;
-    __u32 csum = 0;
-    __u16 *ptr;
-    int len;
+    __u32 csum;
 
-    // Pseudo-header: source IP, destination IP, protocol, length
+    // Get existing checksum and new values
     __u32 new_ip = ip->daddr;
-    __u16 new_port = 0;
-    csum += ip->saddr & 0xFFFF;
-    csum += (ip->saddr >> 16) & 0xFFFF;
-    csum += old_ip & 0xFFFF;
-    csum += (old_ip >> 16) & 0xFFFF;
-    csum += __constant_htons(protocol);
-
+    __u16 new_port;
     if (protocol == IPPROTO_TCP) {
         struct tcphdr *tcp = l4_hdr;
         if ((void *)(tcp + 1) > data_end)
             return;
+        csum = ~bpf_ntohs(tcp->check); // Invert to original sum
         new_port = tcp->dest;
-        len = bpf_ntohs(ip->tot_len) - (ip->ihl * 4);
-        csum += __constant_htons(len);
         tcp->check = 0;
-        ptr = (__u16 *)tcp;
-        len = len / 2;
     } else { // UDP
         struct udphdr *udp = l4_hdr;
         if ((void *)(udp + 1) > data_end)
             return;
+        csum = (udp->check == 0) ? 0 : ~bpf_ntohs(udp->check); // Handle optional UDP checksum
         new_port = udp->dest;
-        len = bpf_ntohs(udp->len);
-        csum += __constant_htons(len);
         udp->check = 0;
-        ptr = (__u16 *)udp;
-        len = len / 2;
     }
 
-    // Subtract old destination IP and port
+    // Incremental update: subtract old values, add new values
     csum -= old_ip & 0xFFFF;
     csum -= (old_ip >> 16) & 0xFFFF;
     csum -= old_port;
-
-    // Add new destination IP and port
     csum += new_ip & 0xFFFF;
     csum += (new_ip >> 16) & 0xFFFF;
     csum += new_port;
-
-    // Calculate checksum for L4 header and data
-    for (int i = 0; i < len && (void *)(ptr + i + 1) <= data_end; i++)
-        csum += ptr[i];
 
     // Fold checksum
     csum = (csum & 0xFFFF) + (csum >> 16);
     csum = (csum & 0xFFFF) + (csum >> 16);
 
     // Set checksum
-    if (protocol == IPPROTO_TCP)
-        ((struct tcphdr *)l4_hdr)->check = ~csum;
-    else
-        ((struct udphdr *)l4_hdr)->check = (csum == 0) ? 0xFFFF : ~csum;
+    __u16 final_csum = ~csum;
+    if (protocol == IPPROTO_TCP) {
+        ((struct tcphdr *)l4_hdr)->check = bpf_htons(final_csum);
+    } else { // UDP
+        ((struct udphdr *)l4_hdr)->check = (final_csum == 0) ? bpf_htons(0xFFFF) : bpf_htons(final_csum);
+    }
 }
 
 // Process TCP packet
@@ -210,7 +192,7 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
 
         // Update checksums
         update_ip_checksum(ip);
-        //update_l4_checksum(skb, ip, tcp, IPPROTO_TCP, old_ip, old_port);
+        update_l4_checksum(skb, ip, tcp, IPPROTO_TCP, old_ip, old_port);
     }
 
     return TC_ACT_OK;
@@ -266,9 +248,8 @@ static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphd
 
         // Update checksums
         update_ip_checksum(ip);
-        //update_l4_checksum(skb, ip, udp, IPPROTO_UDP, old_ip, old_port);
+        update_l4_checksum(skb, ip, udp, IPPROTO_UDP, old_ip, old_port);
     }
-
 
     return TC_ACT_OK;
 }
