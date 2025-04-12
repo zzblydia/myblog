@@ -21,6 +21,15 @@ struct rule_value {
     __u16 target_port;  // Target port
 } __attribute__((packed));
 
+enum {
+    LOG_LEVEL_OFF,
+    LOG_LEVEL_CRITICAL,
+    LOG_LEVEL_ERR,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_DEBUG,
+} LOG_LEVEL;
+
 int tc_ingress_user()
 {
     // 还得是grok3, kimi不行
@@ -31,12 +40,12 @@ int tc_ingress_user()
     }
 
     __u32 log_key = 0;
-    __u8 log_value = 2; // Enable logging
-    if (bpf_map_update_elem(log_fd, &log_key, &log_value, BPF_ANY) < 0) {
+    __u8 log_level = LOG_LEVEL_ERR; // Enable error
+    if (bpf_map_update_elem(log_fd, &log_key, &log_level, BPF_ANY) < 0) {
         printf("[%s:%d] Failed to update log_enable_map\n", __FUNCTION__, __LINE__);
         return 1;
     }
-    printf("Log enabled\n");
+    printf("Log level %u\n", log_level);
 
     int rules_fd = bpf_obj_get("/sys/fs/bpf/tc/globals/fwd_rules_01"); // 假设 map 被 pin 在默认路径
     if (rules_fd < 0) {

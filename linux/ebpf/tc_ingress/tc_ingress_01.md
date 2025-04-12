@@ -7,7 +7,7 @@
 | 文件                        | 描述        |
 | -----------------------     | ----------- |
 | tc_ingress_01_kernel.c      | 内核态程序, 在tc ingress完成网络数据包处理, 使用命令行启动, 启动后设置map并pinned持久化 |
-| tc_ingress_01_user.c        | 用户态程序, 启动后监听tcp和udp端口, 并更新map                                           |
+| tc_ingress_01_user.c        | 用户态程序, 更新log map和转发规则map                                                    |
 | tc_ingress_socket.c         | 提供tcp和udp的套接字监听                                                                |
 
 ---
@@ -135,15 +135,16 @@ sudo gcc -g -o tc_ingress_01_user tc_ingress_01_user.c -I/usr/include/$(uname -m
 sudo ./tc_ingress_01_user
 
 // 起监听端口号和更新map配置
-gcc -g -o tc_ingress_01_socket tc_ingress_socket.c tc_ingress_01_user.c -I/usr/include/$(uname -m)-linux-gnu/ -L /usr/include/$(uname -m)-linux-gnu/ -lbpf -lpthread
- sudo ./tc_ingress_01_socket
- 
+sudo gcc -g -o tc_ingress_01_socket tc_ingress_socket.c tc_ingress_01_user.c -I/usr/include/$(uname -m)-linux-gnu/ -L /usr/include/$(uname -m)-linux-gnu/ -lbpf -lpthread
+sudo ./tc_ingress_01_socket
+
 sudo netstat -tunlp | grep 18023
 sudo netstat -tunlp | grep 18024
+sudo tcpdump -i any -s 0 'port 8023 || port 8024'
 
 从另一台机器使用socat模拟发送tcp消息和udp消息
 echo "Hello, this is a tcp message 20250412-124800" | socat - TCP4:192.168.23.62:8023,bind=192.168.23.52,sourceport=8023
-echo "Hello, this is a udp message 20250412-125400" | socat - TCP4:192.168.23.62:8024,bind=192.168.23.52,sourceport=8024
+echo "Hello, this is a udp message 20250412-125400" | socat - UDP4:192.168.23.62:8024,bind=192.168.23.52,sourceport=8024
 ```
 
 #### AI提示词

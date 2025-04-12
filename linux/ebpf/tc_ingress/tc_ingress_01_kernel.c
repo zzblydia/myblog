@@ -6,7 +6,6 @@
 #include <linux/udp.h>
 #include <linux/in.h>
 #include <bpf/bpf_helpers.h>
-
 #include <bpf/bpf_endian.h> // for bpf_ntohs
 
 // Port range for destination port check
@@ -46,6 +45,15 @@ struct {
     __type(value, __u8);
     __uint(pinning, LIBBPF_PIN_BY_NAME);  // 添加 pinning 属性
 } log_switch_01 SEC(".maps");
+
+enum {
+    LOG_LEVEL_OFF,
+    LOG_LEVEL_CRITICAL,
+    LOG_LEVEL_ERR,
+    LOG_LEVEL_WARNING,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_DEBUG,
+} LOG_LEVEL;
 
 // Validate packet headers
 static __always_inline int packets_valid_check(struct __sk_buff *skb, struct ethhdr **eth, struct iphdr **ip)
@@ -136,8 +144,7 @@ static __always_inline void update_l4_checksum(struct __sk_buff *skb, struct iph
     }
 }
 
-// Process TCP packet
-static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphdr *ip)
+static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphdr *ip, __u8 log_level)
 {
     void *data_end = (void *)(long)skb->data_end;
     struct tcphdr *tcp = (void *)ip + (ip->ihl * 4);
@@ -148,7 +155,6 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
     if (bpf_ntohs(tcp->dest) < PORT_MIN || bpf_ntohs(tcp->dest) > PORT_MAX)
         return TC_ACT_OK;
 
-
     // Initialize rule key
     struct rule_key key = {
         .protocol = ip->protocol,
@@ -158,25 +164,13 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
         .dst_port = tcp->dest,
     };
 
-    // Lookup forwarding rule
-    __u8 log_enable = 1;
-    __u32 log_key = 0;
-    __u8 *log_ptr = bpf_map_lookup_elem(&log_switch_01, &log_key);
-    if (log_ptr) {
-        log_enable = *log_ptr;
-        bpf_printk("process_tcp_packet: log_ptr not null log_enable %u, sizeof(rule_key) %u, sizeof(rule_value) %u\n", log_enable,
-            sizeof(struct rule_key), sizeof(struct rule_value));
-    } else {
-        bpf_printk("process_tcp_packet: log_ptr null\n");
-    }
-
-    if (log_enable) {
+    if (log_level >= LOG_LEVEL_DEBUG) {
         bpf_printk("process_tcp_packet: protocol=%u, src=%u:%u, dst=%u:%u\n", ip->protocol, ip->saddr, tcp->source, ip->daddr, tcp->dest);
     }
 
     struct rule_value *value = bpf_map_lookup_elem(&fwd_rules_01, &key);
     if (value) {
-        if (log_enable) {
+        if (log_level >= LOG_LEVEL_INFO) {
             bpf_printk("process_tcp_packet: protocol=%u, src=%u:%u, dst=%u:%u, rule_id=%u, target=%x:%u\n", key.protocol, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port),
                 bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port), value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
         }
@@ -193,16 +187,17 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
         update_ip_checksum(ip);
         update_l4_checksum(skb, ip, tcp, IPPROTO_TCP, old_ip, old_port);
     } else {
-        bpf_printk("process_tcp_packet failed src=%x:%u\n", bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
+        // 目标端口符合的又没匹配到规则
+        if (log_level >= LOG_LEVEL_ERR) {
+            bpf_printk("process_tcp_packet failed src=%x:%u\n", bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
+        }
     }
 
     return TC_ACT_OK;
 }
 
-// Process UDP packet
-static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphdr *ip)
+static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphdr *ip, __u8 log_level)
 {
-
     void *data_end = (void *)(long)skb->data_end;
     struct udphdr *udp = (void *)ip + (ip->ihl * 4);
     if ((void *)(udp + 1) > data_end)
@@ -221,22 +216,15 @@ static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphd
         .dst_port = udp->dest,
     };
 
-    // Lookup forwarding rule
-    __u8 log_enable = 1;
+    if (log_level >= LOG_LEVEL_DEBUG) {
+        bpf_printk("process_udp_packet: protocol=%u, src=%u:%u, dst=%u:%u\n", ip->protocol, ip->saddr, udp->source, ip->daddr, udp->dest);
+    }
+
     struct rule_value *value = bpf_map_lookup_elem(&fwd_rules_01, &key);
     if (value) {
-        // Read log enable flag from global array
-        __u32 log_key = 0;
-        __u8 *log_val = bpf_map_lookup_elem(&log_switch_01, &log_key);
-        if (log_val)
-            log_enable = *log_val;
-
-        if (log_enable) {
-            // bpf_trace_printk参数只能有3个. cat /sys/kernel/debug/tracing/trace_pipe
-            // bpf_printk dmesg
-            bpf_printk("process_udp_packet: rule_id=%u, src=%x:%u\n", value->rule_id, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
-            bpf_printk("process_udp_packet: rule_id=%u, dst=%x:%u\n", value->rule_id, bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port));
-            bpf_printk("process_udp_packet: rule_id=%u, target=%x:%u\n", value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
+        if (log_level >= LOG_LEVEL_DEBUG) {
+            bpf_printk("process_udp_packet: protocol=%u, src=%u:%u, dst=%u:%u, rule_id=%u, target=%x:%u\n", key.protocol, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port),
+                bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port), value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
         }
 
         // Store old values for checksum update
@@ -251,7 +239,10 @@ static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphd
         update_ip_checksum(ip);
         update_l4_checksum(skb, ip, udp, IPPROTO_UDP, old_ip, old_port);
     } else {
-        bpf_printk("process_udp_packet failed src=%x:%u\n", bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
+        // 目标端口符合的又没匹配到规则
+        if (log_level >= LOG_LEVEL_ERR) {
+            bpf_printk("process_udp_packet failed src=%x:%u\n", bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
+        }
     }
 
     return TC_ACT_OK;
@@ -267,11 +258,22 @@ int tc_ingress_01(struct __sk_buff *skb)
     if (!packets_valid_check(skb, &eth, &ip))
         return TC_ACT_OK;
 
+    // Lookup forwarding rule
+    __u8 log_level = 0;
+    __u32 log_key = 0;
+    __u8 *log_ptr = bpf_map_lookup_elem(&log_switch_01, &log_key);
+    if (log_ptr) {
+        log_level = *log_ptr;
+    } else {
+        // 连log_switch都获取不到时打印结构体大小观察字节对齐
+        bpf_printk("tc_ingress_01:sizeof(rule_key) %u, sizeof(rule_value) %u\n", sizeof(struct rule_key), sizeof(struct rule_value));
+    }
+
     // Process TCP or UDP packet
     if (ip->protocol == IPPROTO_TCP)
-        return process_tcp_packet(skb, ip);
+        return process_tcp_packet(skb, ip, log_level);
     else if (ip->protocol == IPPROTO_UDP)
-        return process_udp_packet(skb, ip);
+        return process_udp_packet(skb, ip, log_level);
 
     return TC_ACT_OK;
 }
