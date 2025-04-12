@@ -8,6 +8,10 @@
 #include <bpf/libbpf.h>
 #include <bpf/bpf.h>
 #include <net/if.h>
+#include <pthread.h>
+
+extern void tcp_listen();
+extern void udp_listen();
 
 // libbpf 日志回调函数
 static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args) {
@@ -28,7 +32,8 @@ struct rule_value {
     __u16 target_port;
 };
 
-int main(int argc, char **argv) {
+int tc_ingress_user(char* interface)
+{
     struct bpf_object *obj = NULL;
     struct bpf_program *prog = NULL;
     struct bpf_map *log_map = NULL, *rules_map = NULL;
@@ -38,17 +43,10 @@ int main(int argc, char **argv) {
     int ifindex;
     int ret;
 
-    // 0. 检查参数
-    if (argc != 2) {
-        fprintf(stderr, "Usage: %s <interface>\n", argv[0]);
-        fprintf(stderr, "Example: %s eth0\n", argv[0]);
-        return 1;
-    }
-
     // 获取网络接口索引
-    ifindex = if_nametoindex(argv[1]);
+    ifindex = if_nametoindex(interface);
     if (ifindex == 0) {
-        fprintf(stderr, "Failed to get interface index for %s: %s\n", argv[1], strerror(errno));
+        fprintf(stderr, "Failed to get interface index for %s: %s\n", interface, strerror(errno));
         return 1;
     }
 
@@ -56,7 +54,7 @@ int main(int argc, char **argv) {
     libbpf_set_print(libbpf_print_fn);
 
     // 2. 打开 eBPF 程序
-    obj = bpf_object__open_file("ebpf_tc_ingress_01_kernel.o", NULL);
+    obj = bpf_object__open_file("tc_ingress_01_kernel.o", NULL);
     if (libbpf_get_error(obj)) {
         fprintf(stderr, "Failed to open eBPF object file: %s\n", strerror(errno));
         return 1;
@@ -70,8 +68,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // 4. 查找 eBPF 程序
-    prog = bpf_object__find_program_by_name(obj, "tc_ingress_01_kernel");
+    // 4. 查找 eBPF 程序 这里填的是内核态程序的入口函数名
+    prog = bpf_object__find_program_by_name(obj, "tc_ingress_01");
     if (!prog) {
         fprintf(stderr, "Failed to find tc_ingress_01_kernel program\n");
         bpf_object__close(obj);
@@ -195,12 +193,12 @@ int main(int argc, char **argv) {
     printf("UDP rule added (rule_id=2)\n");
 
     // 13. Pin 程序以持久化（可选）
-    ret = bpf_obj_pin(bpf_program__fd(prog), "/sys/fs/bpf/tc_ingress");
-    if (ret) {
-        fprintf(stderr, "Failed to pin tc_ingress program: %s\n", strerror(errno));
-        goto cleanup;
-    }
-    printf("Pinned tc_ingress program to /sys/fs/bpf/tc_ingress\n");
+    //ret = bpf_obj_pin(bpf_program__fd(prog), "/sys/fs/bpf/tc_ingress_01");
+    //if (ret) {
+    //    fprintf(stderr, "Failed to pin tc_ingress_01 program: %s\n", strerror(errno));
+    //    goto cleanup;
+    //}
+    printf("Pinned tc_ingress program to /sys/fs/bpf/tc_ingress_01\n");
 
     printf("eBPF program and maps configured successfully. Persisted to /sys/fs/bpf/\n");
 
@@ -215,3 +213,22 @@ cleanup:
     // 注意：不销毁 tc_hook 和 tc_opts，让程序保持附加
     return ret ? 1 : 0;
 }
+
+#ifdef _TC_INGRESS_02_MAIN
+int main(int argc, char **argv)
+{
+    pthread_t tcp_thread, udp_thread;
+
+    // 检查启动参数
+    if (argc != 2) {
+        fprintf(stderr, "Usage: %s <interface>\n", argv[0]);
+        fprintf(stderr, "Example: %s eth0\n", argv[0]);
+        return 1;
+    }
+
+    // 创建map配置并启动ebpf内核态程序
+    tc_ingress_user(argv[1]);
+
+    return 0;
+}
+#endif
