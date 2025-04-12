@@ -1,54 +1,17 @@
-/*
-文件目标:
-1.内核态程序, 做网络数据包的转发.
-2.转发规则由用户态程序下发并作配置持久化, 每一条转发规则包含 规则id, 数据包类型, 源ip和port, 目的ip和port, 目标ip和port.
-如针对tcp报文, 源ip和port是 192.168.23.1:8023, 目的ip和port是 192.168.23.62:8023的数据, 如果匹配到转发规则, 则转发到192.168.23.62:18023.
-如针对udp报文, 源ip和port是 192.168.23.1:8024, 目的ip和port是 192.168.23.62:8024的数据, 如果匹配到转发规则, 则转发到192.168.23.62:18024.
-
-ubuntu 24.04
-
-apt install -y clang llvm libbpf-dev
-Ubuntu clang version 18.1.3 (1ubuntu1)
-
-clang -target bpf -O2 -g -I/usr/include/$(uname -m)-linux-gnu/ -c ebpf_tc_ingress_01_kernel.c -o ebpf_tc_ingress_01_kernel.o
-
-sudo tc qdisc add dev ens33 clsact
-sudo tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier
-
-sudo tc qdisc show dev ens33 clsact
-sudo tc filter show dev ens33 ingress
-sudo bpftool prog list | tail
-sudo bpftool prog show name tc_ingress_01_kernel
-
-sudo bpftool map
-sudo bpftool map dump id 145
-sudo bpftool map update name log_enable_map key 0 0 0 0 value 1
-
-sudo bpftool map update name forward_rules key 6 0 0 0 c0 a8 17 01 00 00 1f 57 c0 a8 17 3e 00 00 1f 57 value 1 c0 a8 17 3e 00 00 46 5f
-key：protocol=6 (TCP), src_ip=c0a81701 (192.168.23.1), src_port=1f57 (8023), dst_ip=c0a8173e (192.168.23.62), dst_port=1f47 (8023)。
-value：rule_id=1, target_ip=c0a8173e (192.168.23.62), target_port=465f (18023)
-
-sudo bpftool map update name forward_rules key 17 0 0 0 c0 a8 17 01 00 00 1f 48 c0 a8 17 3e 00 00 1f 48 value 2 c0 a8 17 3e 00 00 46 60
-key：protocol=17 (TCP), src_ip=c0a81701 (192.168.23.1), src_port=1f48 (8024), dst_ip=c0a8173e (192.168.23.62), dst_port=1f48 (8024)。
-value：rule_id=2, target_ip=c0a8173e (192.168.23.62), target_port=4660 (18023)
-
-sudo tc qdisc del dev ens33 clsact
-sudo tc filter del dev ens33 ingress
-*/
-
 #include <linux/bpf.h>
 #include <linux/pkt_cls.h>
 #include <linux/if_ether.h>
 #include <linux/ip.h>
 #include <linux/tcp.h>
 #include <linux/udp.h>
-#include <bpf/bpf_helpers.h>
 #include <linux/in.h>
+#include <bpf/bpf_helpers.h>
+
 #include <bpf/bpf_endian.h> // for bpf_ntohs
 
 // Port range for destination port check
-#define PORT_MIN 8000
-#define PORT_MAX 8100
+#define PORT_MIN 8023
+#define PORT_MAX 8024
 
 // Key for forwarding rules
 struct rule_key {
@@ -72,7 +35,8 @@ struct {
     __uint(max_entries, 256);
     __type(key, struct rule_key);
     __type(value, struct rule_value);
-} forward_rules SEC(".maps");
+    __uint(pinning, LIBBPF_PIN_BY_NAME);  // 添加 pinning 属性
+} fwd_rules_01 SEC(".maps");
 
 // Global array to store logging configuration
 struct {
@@ -80,7 +44,8 @@ struct {
     __uint(max_entries, 1);
     __type(key, __u32);
     __type(value, __u8);
-} log_enable_map SEC(".maps");
+    __uint(pinning, LIBBPF_PIN_BY_NAME);  // 添加 pinning 属性
+} log_switch_01 SEC(".maps");
 
 // Validate packet headers
 static __always_inline int packets_valid_check(struct __sk_buff *skb, struct ethhdr **eth, struct iphdr **ip)
@@ -194,21 +159,26 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
     };
 
     // Lookup forwarding rule
-    __u8 log_enable = 0;
-    struct rule_value *value = bpf_map_lookup_elem(&forward_rules, &key);
-    if (value) {
-        // Read log enable flag from global array
-        __u32 log_key = 0;
-        __u8 *log_val = bpf_map_lookup_elem(&log_enable_map, &log_key);
-        if (log_val)
-            log_enable = *log_val;
+    __u8 log_enable = 1;
+    __u32 log_key = 0;
+    __u8 *log_ptr = bpf_map_lookup_elem(&log_switch_01, &log_key);
+    if (log_ptr) {
+        log_enable = *log_ptr;
+        bpf_printk("process_tcp_packet: log_ptr not null log_enable %u\n", log_enable);
+    } else {
+        bpf_printk("process_tcp_packet: log_ptr null\n");
+    }
 
-        // Log if enabled
+    if (log_enable) {
+        bpf_printk("process_tcp_packet: protocol=%u, src=%u:%u, dst=%u:%u\n", key.protocol, key.src_ip, key.src_port,
+            key.dst_ip, key.dst_port);
+    }
+
+    struct rule_value *value = bpf_map_lookup_elem(&fwd_rules_01, &key);
+    if (value) {
         if (log_enable) {
-            // bpf_trace_printk参数只能有3个.
-            bpf_printk("TCP: rule_id=%u, src=%x:%u\n", value->rule_id, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
-            bpf_printk("TCP: rule_id=%u, dst=%x:%u\n", value->rule_id, bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port));
-            bpf_printk("TCP: rule_id=%u, target=%x:%u\n", value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
+            bpf_printk("process_tcp_packet: protocol=%u, src=%u:%u, dst=%u:%u, rule_id=%u, target=%x:%u\n", key.protocol, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port),
+                bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port), value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
         }
 
         // Store old values for checksum update
@@ -222,6 +192,8 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
         // Update checksums
         update_ip_checksum(ip);
         update_l4_checksum(skb, ip, tcp, IPPROTO_TCP, old_ip, old_port);
+    } else {
+        bpf_printk("process_tcp_packet failed src=%x:%u\n", bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
     }
 
     return TC_ACT_OK;
@@ -250,21 +222,21 @@ static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphd
     };
 
     // Lookup forwarding rule
-    __u8 log_enable = 0;
-    struct rule_value *value = bpf_map_lookup_elem(&forward_rules, &key);
+    __u8 log_enable = 1;
+    struct rule_value *value = bpf_map_lookup_elem(&fwd_rules_01, &key);
     if (value) {
         // Read log enable flag from global array
         __u32 log_key = 0;
-        __u8 *log_val = bpf_map_lookup_elem(&log_enable_map, &log_key);
+        __u8 *log_val = bpf_map_lookup_elem(&log_switch_01, &log_key);
         if (log_val)
             log_enable = *log_val;
 
         if (log_enable) {
             // bpf_trace_printk参数只能有3个. cat /sys/kernel/debug/tracing/trace_pipe
             // bpf_printk dmesg
-            bpf_printk("UDP: rule_id=%u, src=%x:%u\n", value->rule_id, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
-            bpf_printk("UDP: rule_id=%u, dst=%x:%u\n", value->rule_id, bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port));
-            bpf_printk("UDP: rule_id=%u, target=%x:%u\n", value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
+            bpf_printk("process_udp_packet: rule_id=%u, src=%x:%u\n", value->rule_id, bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
+            bpf_printk("process_udp_packet: rule_id=%u, dst=%x:%u\n", value->rule_id, bpf_ntohl(key.dst_ip), bpf_ntohs(key.dst_port));
+            bpf_printk("process_udp_packet: rule_id=%u, target=%x:%u\n", value->rule_id, bpf_ntohl(value->target_ip), bpf_ntohs(value->target_port));
         }
 
         // Store old values for checksum update
@@ -278,13 +250,15 @@ static __always_inline int process_udp_packet(struct __sk_buff *skb, struct iphd
         // Update checksums
         update_ip_checksum(ip);
         update_l4_checksum(skb, ip, udp, IPPROTO_UDP, old_ip, old_port);
+    } else {
+        bpf_printk("process_udp_packet failed src=%x:%u\n", bpf_ntohl(key.src_ip), bpf_ntohs(key.src_port));
     }
 
     return TC_ACT_OK;
 }
 
 SEC("classifier")
-int tc_ingress_01_kernel(struct __sk_buff *skb)
+int tc_ingress_01(struct __sk_buff *skb)
 {
     struct ethhdr *eth;
     struct iphdr *ip;
@@ -303,21 +277,3 @@ int tc_ingress_01_kernel(struct __sk_buff *skb)
 }
 
 char _license[] SEC("license") = "GPL";
-
-/*
-tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier 加载报错,没有调试信息
-
-libbpf: BTF is required, but is missing or corrupted.
-ERROR: opening BPF object file failed
-Unable to load program
-*/
-
-/*
-clang -target bpf -O2 -g -I/usr/include/$(uname -m)-linux-gnu/ -c ebpf_tc_ingress_01_kernel.c -o ebpf_tc_ingress_01_kernel.o
-sudo tc filter add dev ens33 ingress bpf obj ebpf_tc_ingress_01_kernel.o sec classifier 
-加-g调试 加载日志疯狂刷屏 加载失败 优化update_l4_checksum函数后解决
-
-libbpf: BTF is required, but is missing or corrupted.
-ERROR: opening BPF object file failed
-Unable to load program
-*/
