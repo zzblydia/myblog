@@ -105,6 +105,26 @@ sudo cat /sys/kernel/debug/tracing/trace
 3. 我已经实现一部分代码, 请按照我的代码和我的指示, 逐步改进
 ```
 
+#### bug解决!!!!!  
+从早上4:15分到17:45分不吃不睡有喝, 就为了解决这个问题.  
+```
+sudo cat /sys/kernel/debug/tracing/trace
+
+这个日志表明, 在协议(1字节)和源ip(4字节)为key时, 即使两次的数据包协议和源ip相同, 匹配struct rule_value *value = bpf_map_lookup_elem(&fwd_rules_01, &key);也可能失败,
+从而猜测是字节对齐(4字节对齐)导致的补字节的时候, 内核态和用户态程序补的字节如果不一样导致的key(按字节比较不一样)就会匹配失败.
+
+15467.734288: bpf_trace_printk: process_tcp_packet: log_ptr not null log_enable 2, sizeof(rule_key) 8, sizeof(rule_value) 12
+
+15467.734291: bpf_trace_printk: process_tcp_packet: protocol=6, src=873965760:22303, dst=1041737920:22303
+
+15467.734293: bpf_trace_printk: process_tcp_packet: protocol=6, src=873965760, rule_id=1, target=1041737920:26438
+
+15468.748025: bpf_trace_printk: process_tcp_packet: log_ptr not null log_enable 2, sizeof(rule_key) 8, sizeof(rule_value) 12
+
+15468.748028: bpf_trace_printk: process_tcp_packet: protocol=6, src=873965760:22303, dst=1041737920:22303
+
+15468.748030: bpf_trace_printk: process_tcp_packet failed src=3417a8c0:
+```
 
 ### tc_ingress_01_user.c  
 

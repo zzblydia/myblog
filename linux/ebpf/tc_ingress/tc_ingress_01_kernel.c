@@ -15,19 +15,19 @@
 
 // Key for forwarding rules
 struct rule_key {
-    __u8 protocol;      // Protocol (IPPROTO_TCP or IPPROTO_UDP)
+    __u32 protocol;      // Protocol (IPPROTO_TCP or IPPROTO_UDP)
     __u32 src_ip;       // Source IP
     __u16 src_port;     // Source port
     __u32 dst_ip;       // Destination IP
     __u16 dst_port;     // Destination port
-};
+} __attribute__((packed));
 
 // Value for forwarding rules
 struct rule_value {
-    __u8 rule_id;       // Rule ID (0-255)
+    __u32 rule_id;       // Rule ID (0-255)
     __u32 target_ip;    // Target IP
     __u16 target_port;  // Target port
-};
+} __attribute__((packed));
 
 // Hash map to store forwarding rules
 struct {
@@ -164,14 +164,14 @@ static __always_inline int process_tcp_packet(struct __sk_buff *skb, struct iphd
     __u8 *log_ptr = bpf_map_lookup_elem(&log_switch_01, &log_key);
     if (log_ptr) {
         log_enable = *log_ptr;
-        bpf_printk("process_tcp_packet: log_ptr not null log_enable %u\n", log_enable);
+        bpf_printk("process_tcp_packet: log_ptr not null log_enable %u, sizeof(rule_key) %u, sizeof(rule_value) %u\n", log_enable,
+            sizeof(struct rule_key), sizeof(struct rule_value));
     } else {
         bpf_printk("process_tcp_packet: log_ptr null\n");
     }
 
     if (log_enable) {
-        bpf_printk("process_tcp_packet: protocol=%u, src=%u:%u, dst=%u:%u\n", key.protocol, key.src_ip, key.src_port,
-            key.dst_ip, key.dst_port);
+        bpf_printk("process_tcp_packet: protocol=%u, src=%u:%u, dst=%u:%u\n", ip->protocol, ip->saddr, tcp->source, ip->daddr, tcp->dest);
     }
 
     struct rule_value *value = bpf_map_lookup_elem(&fwd_rules_01, &key);

@@ -7,19 +7,19 @@
 
 // Key for forwarding rules
 struct rule_key {
-    __u8 protocol;      // Protocol (IPPROTO_TCP or IPPROTO_UDP)
+    __u32 protocol;      // Protocol (IPPROTO_TCP or IPPROTO_UDP)
     __u32 src_ip;       // Source IP
     __u16 src_port;     // Source port
     __u32 dst_ip;       // Destination IP
     __u16 dst_port;     // Destination port
-};
+} __attribute__((packed));
 
 // Value for forwarding rules
 struct rule_value {
-    __u8 rule_id;       // Rule ID (0-255)
+    __u32 rule_id;       // Rule ID (0-255)
     __u32 target_ip;    // Target IP
     __u16 target_port;  // Target port
-};
+} __attribute__((packed));
 
 int tc_ingress_user()
 {
