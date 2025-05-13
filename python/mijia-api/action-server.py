@@ -5,7 +5,7 @@ import logging
 import ast
 from datetime import datetime, timedelta
 
-SERVER_IP = "192.168.8.62"
+SERVER_IP = "192.168.8.1"
 SERVER_PORT = 58000
 BATTERY_PERCENT_MIN = 50  # 低于百分比则开始充电
 BATTERY_PERCENT_MAX = 90  # 高于百分比则停止充电
@@ -136,11 +136,14 @@ class TCPServer:
 
                     client_socket.close()
                 except socket.timeout:
-                    # Timeout occurred, check for 3-minute timeout if state is on
-                    if self.current_state:
-                        time_diff = datetime.now() - self.last_valid_data_time
-                        # 客户端3分钟发一次, 3次没发则认为客户端关机, 需要关闭插座
-                        if time_diff > timedelta(seconds=600):
+                    time_diff = datetime.now() - self.last_valid_data_time
+                    # 客户端3分钟发一次, 10分钟没发则认为客户端关机, 需要关闭插座
+                    if time_diff > timedelta(seconds=600):
+                        # 笔记本电脑关机时, 手工打开了插座, 这里不会因为笔记本关机而关掉插座
+                        # 因为笔记本没有上报过正在充电的状态
+                        # 不检查状态而每10分钟获取一次插座真实状态并关闭插座似乎也不太合适
+                        # self.set_current_state()
+                        if self.current_state:
                             self.set_switch_state(False)
                             self.set_current_state()
                             self.last_valid_data_time = datetime.now()  # Reset to current time
