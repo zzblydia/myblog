@@ -122,6 +122,10 @@ class TCPServer:
                             percent = json_data.get('BatteryPercentage')
                             is_charging = json_data.get('IsCharging')
 
+                            # 收到消息则更新状态, 如果进入开或者关则再次校准真实状态, 解决以下场景问题:
+                            # 未满足开或者关的状态下, 手工打开开关开始充电, 关机后插座需要自动关闭
+                            self.current_state = is_charging
+
                             if percent < BATTERY_PERCENT_MIN and not is_charging:
                                 self.set_switch_state(True)
                                 self.set_current_state()
