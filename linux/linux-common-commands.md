@@ -7,6 +7,12 @@ strace -f -k -n -s 1000 -t -q -e trace=connect,socket -o ./strace.log -p PID
 ```
 
 ## xargs  
+```
+find . -name "*.log" | xargs grep -an "error"  
+
+路径中有空格时
+find . -type f -name "*.log" -print0| xargs -0 grep -an "goods"  
+```
 
 ## sed  
 
