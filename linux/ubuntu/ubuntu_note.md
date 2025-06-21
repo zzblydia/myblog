@@ -1,7 +1,9 @@
-# some notes  
+# some notes
 
 ## FAQ
-### 1. apt-get update error:  
+
+### 1. apt-get update error:
+
 ```
 apt-get update
 命中:1 http://archive.ubuntu.com/ubuntu noble InRelease
@@ -14,16 +16,24 @@ E: http://archive.ubuntu.com/ubuntu/dists/noble-updates/InRelease 的 Release �
 E: http://archive.ubuntu.com/ubuntu/dists/noble-backports/InRelease 的 Release 文件已经过期(已经过期了 1天 10小时 2分 33秒)。该仓库的更新将不会应用。
 ```
 
-solution:**check and update system time**  
+solution:**check and update system time**
 
-### 2. secureCRT change dir color  
-1>cd ~
+### 2. secureCRT change dir color
+
+1>cd ~  
 2>dircolors -p > .dircolors  
 3>vi .dircolors  
 4>"dir 01;34" ---> "dir 01;35"  
-5>source .bashrc  
+5>source .bashrc
 
-### 3. secureCRT change path color  
+### 3. secureCRT change path color
+
 1>vi .bashrc  
-2>env PS1  34 ---> 35  
-3>source .bashrc  
+2>env PS1 34 ---> 35  
+3>source .bashrc
+
+## supported version
+
+| ubuntu | kernel    | python | gcc      | g++      | openssl |
+|--------|-----------|--------|----------|----------|---------|
+| 24.04  | 6.11.0-26 | 3.12.3 | 13.3.0-6 | 13.3.0-6 | 3.0.13  |
