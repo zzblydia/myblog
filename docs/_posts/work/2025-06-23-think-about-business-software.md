@@ -4,10 +4,10 @@ date:   2025-06-23 23:07:00 +0800
 last_modified_at: 2025-06-23 23:08:00 +0800
 categories: work
 tags: process
-published: false
 ---
 
 # think about one business process  
+
 商业化的软件, 尤其是大型的(电信级)的商业化软件, 必定跟普通的工具小程序有不同, 关于此在工作经历上做了一些记录和思考.  
 比如系统分为A(windows控制端), B后台系统(受控端, 数据库, 日志管理, 业务数据汇总)
 
