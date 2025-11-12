@@ -4,6 +4,7 @@ date:   2025-06-23 23:07:00 +0800
 last_modified_at: 2025-06-23 23:08:00 +0800
 categories: work
 tags: process
+published: false
 ---
 
 # think about one business process  

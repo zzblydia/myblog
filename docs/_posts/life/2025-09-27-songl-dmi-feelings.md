@@ -1,9 +1,10 @@
 ---
 title:  "A Few Thoughts After Taking Delivery of the SongL-DMI"
 date:   2025-09-27 04:53:00 +0800
-last_modified_at: 2025-09-127 04:53:00 +0800
+last_modified_at: 2025-09-27 04:53:00 +0800
 categories: life
 tags: songL
+published: false
 ---
 
 # A Few Thoughts After Taking Delivery of the SongL-DMI  
