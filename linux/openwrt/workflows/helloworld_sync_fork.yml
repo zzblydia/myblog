@@ -1,0 +1,51 @@
+# https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork?platform=linux
+# 自动同步openwrt上游代码
+
+name: helloworld_sync_fork_upstream
+
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - 20221030_helloworld_auto_update
+  schedule:
+   - cron:  '30 23 * * *' # 每天23:30同步
+
+jobs:
+
+  build_openwrt:
+
+    name: helloworld sync fork upstream
+    runs-on: ubuntu-latest
+
+    # if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+      - name: checkout repo helloworld
+        uses: actions/checkout@v2
+        with:
+          repository: zzblydia/helloworld
+          path: helloworld
+          token: ${{ secrets.GH_TOKEN }} # 不加git push不行. Permission to zzblydia/openwrt.git denied to github-actions[bot].
+          
+      - name: show basic infomation
+        run: |
+          pwd
+          ls -al *
+          echo ~
+
+      - name: update helloworld
+        run: |
+          cd helloworld
+          git config --global user.email "github-action@github.com"
+          git config --global user.name "github-action"
+          git branch -a
+          git remote add upstream https://github.com/fw876/helloworld.git
+          git remote -v
+          git fetch upstream 
+          echo -e "fetch helloworld upstream finished"
+
+          git checkout master
+          git merge upstream/master --allow-unrelated-histories
+          git push origin master
+          echo -e "push master finished"

@@ -1,0 +1,78 @@
+# 用于测试./script/feeds update和install以及make download
+
+name: x86_64_21.02_test_download
+
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: 0 20 * * *
+  #push:
+  #  branches: 
+  #    - openwrt-21.02
+  release:
+    types: [published]
+
+jobs:
+
+  build_openwrt:
+
+    name: Build OpenWrt firmware
+
+    runs-on: ubuntu-latest
+
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: openwrt-21.02
+
+      - name: Space cleanup
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* adoptopenjdk* mysql* php* mongodb* dotnet* moby* snapd* || true
+          sudo -E apt-get update
+          # sudo -E apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python3 unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs gcc-multilib g++-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler antlr3 gperf swig
+          # sudo -E apt-get -y install build-essential asciidoc binutils bzip2 gawk gettext git libncurses5-dev libz-dev patch python python2.7-dev python3 wget python3-distutils python3-setuptools python3-dev unzip zlib1g-dev lib32gcc1 libc6-dev-i386 subversion flex uglifyjs gcc-multilib g++-multilib p7zip p7zip-full msmtp libssl-dev texinfo libglib2.0-dev xmlto qemu-utils upx libelf-dev autoconf automake libtool autopoint device-tree-compiler antlr3 gperf swig ccache ecj fastjar file g++ java-propose-classpath libncursesw5-dev rsync time xsltproc 
+          sudo -E apt-get -y install build-essential ccache clang-12 ecj fastjar file g++ gawk gettext git java-propose-classpath libelf-dev libncurses-dev libssl-dev mkisofs python3 python3-dev python3-distutils python3-setuptools qemu-utils rsync subversion swig unzip wget xsltproc zlib1g-dev
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          
+          git branch -a
+          df -h
+
+      - name: Update feeds
+        run: |
+          # mkdir -p package/helloworld
+          # for i in "dns2socks" "microsocks" "ipt2socks" "pdnsd-alt" "redsocks2"; do \
+          #  svn checkout "https://github.com/immortalwrt/packages/trunk/net/$i" "package/helloworld/$i"; \
+          # done
+
+          echo "src-git openclash https://github.com/zzblydia/OpenClash.git" >> feeds.conf.default
+          echo "src-git helloworld https://github.com/zzblydia/helloworld.git" >> feeds.conf.default
+
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Generate configuration file
+        #run: make defconfig
+        run:  |
+          cp x86_64.config.buildinfo .config  # Write changes to .config
+          make defconfig                      # Expand to full config
+
+      - name: Make download
+        run: |
+          make -j1 download V=s
+          find dl -size -1024c -exec rm -f {} \;
+          tar zcvf ./dl.tar.gz ./dl
+          
+      - name: Deliver openwrt dl libraries
+        uses: actions/upload-artifact@v2
+        with:
+          name: openwrt_dl
+          path: ./dl.tar.gz

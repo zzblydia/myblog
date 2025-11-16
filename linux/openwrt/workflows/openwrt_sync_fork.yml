@@ -1,0 +1,132 @@
+# https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork?platform=linux
+# 自动同步openwrt上游代码
+
+name: openwrt_sync_fork_upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+   - cron:  '30 23 * * *' # 每天23:30同步
+   
+permissions:
+  contents: write
+
+jobs:
+
+  build_openwrt:
+
+    name: openwrt sync fork upstream
+    runs-on: ubuntu-latest
+
+    # if: github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+      - name: checkout repo openwrt
+        uses: actions/checkout@v2
+        with:
+          repository: zzblydia/openwrt
+          path: openwrt
+          token: ${{ secrets.GH_TOKEN }} # 不加git push不行. Permission to zzblydia/openwrt.git denied to github-actions[bot].
+
+      - name: checkout repo luci
+        uses: actions/checkout@v2
+        with:
+          repository: zzblydia/luci
+          path: luci
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: checkout repo packages
+        uses: actions/checkout@v2
+        with:
+          repository: zzblydia/packages
+          path: packages
+          token: ${{ secrets.GH_TOKEN }}
+          
+      - name: show basic infomation
+        run: |
+          pwd
+          ls -al *
+          echo ~
+
+      - name: update openwrt
+        run: |
+          cd openwrt
+          git branch -a
+          git remote -v
+          git remote add upstream https://github.com/openwrt/openwrt.git
+          git remote -v
+          git fetch upstream 
+          echo -e "fetch openwrt upstream finished"
+
+          git checkout master
+          git merge upstream/master
+          git push origin master
+          echo -e "push master finished"
+
+          git checkout openwrt-21.02
+          git merge upstream/openwrt-21.02
+          git push origin openwrt-21.02
+
+          git checkout openwrt-22.03
+          git merge upstream/openwrt-22.03
+          git push origin openwrt-22.03
+
+          cd -
+      - name: update packages
+        run: |
+          cd packages
+          git branch -a
+          git remote -v
+          git remote add upstream https://github.com/openwrt/packages.git
+          git remote -v
+          git fetch upstream
+          echo -e "fetch packages upstream finished"
+
+          git checkout master
+          git merge upstream/master
+          git push origin master
+          echo -e "push master finished"
+
+          git checkout openwrt-21.02
+          git merge upstream/openwrt-21.02
+          git push origin openwrt-21.02
+
+          git checkout openwrt-22.03
+          git merge upstream/openwrt-22.03
+          git push origin openwrt-22.03
+
+          cd -
+      - name: update luci
+        run: |
+          cd luci
+          git config checkout.defaultRemote origin
+          git branch -a
+          git remote -v
+          git remote add upstream https://github.com/openwrt/luci.git
+          git remote -v
+          git fetch upstream
+          echo -e "fetch luci upstream finished"
+
+          git checkout master
+          git merge upstream/master
+          git push origin master
+          echo -e "push master finished"
+
+          git checkout openwrt-21.02
+          echo -e "luci git checkout openwrt-21.02 success-------------------------------------------------------"
+          git merge upstream/openwrt-21.02
+          echo -e "luci git merge openwrt-21.02 success-----------------------------------------------------------"
+          
+          # 只有git pull不行, 得加 主机名 分支名. 报错 Updates were rejected because the remote contains work that you do hint: not have locally.
+          # 因为luci有过自己的提交记录.
+          git pull origin openwrt-21.02
+          echo -e "luci git pull openwrt-21.02 success-----------------------------------------------------------"
+          
+          git push origin openwrt-21.02
+          echo -e "luci git push openwrt-21.02 success-----------------------------------------------------------"
+
+          git checkout openwrt-22.03
+          git merge upstream/openwrt-22.03
+          git push origin openwrt-22.03
+
+          cd -

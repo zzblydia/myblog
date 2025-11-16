@@ -1,0 +1,136 @@
+# ubuntu-22.04 编译官方版本 openwrt-23.05_x86_64
+
+name: openwrt-23.05_x86_64
+
+on:
+  workflow_dispatch:
+    inputs:
+      compiling_mode:
+        description: 'compile mode'
+        required: true
+        default: 'single-threaded'
+        type: choice
+        options:
+        - download
+        - single-threaded
+        - multi-threaded
+  # schedule:
+  #   - cron: 0 20 * * *
+  #push:
+  #  branches: 
+  #    - openwrt-23.05
+  release:
+    types: [published]
+  
+jobs:
+
+  job_build_openwrt:
+    name: build openwrt firmware
+    if: github.event.repository.owner.id == github.event.sender.id
+
+    runs-on: ubuntu-22.04
+    timeout-minutes: 600 # single-threaded mode may take more time than job default(360 minutes) maxtime
+    steps:
+      - name: code_checkout
+        uses: actions/checkout@v4
+        with:
+          repository: ifreedoms/openwrt
+          ref: openwrt-23.05
+          fetch-depth: 1
+
+      - name: environment_prepare
+        run: |
+          docker rmi `docker images -q`
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* adoptopenjdk* mysql* php* mongodb* dotnet* moby* snapd* || true
+          
+          sudo -E apt-get update
+          sudo -E apt-get -y install build-essential clang flex bison g++ gawk gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev python3-distutils rsync unzip zlib1g-dev file wget qemu-utils
+          
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          
+          echo "src-git helloworld https://github.com/ifreedoms/helloworld.git;main" >>feeds.conf.default
+          echo "src-git OpenClash  https://github.com/ifreedoms/OpenClash.git" >>feeds.conf.default
+          
+          echo "-----------------------------------------------------------------------"
+          git branch
+          echo "-----------------------------------------------------------------------"
+          df -h
+
+      - name: update_feeds
+        run: |
+          ./scripts/feeds update  -a
+          ./scripts/feeds install -a
+          ./scripts/feeds install -a   # 验证"缺少依赖的warning"为安装顺序导致的误告警
+
+      - name: generate_configuration_file
+        run: |
+          cp ./diffconfigs/x86_64_plugin.config.buildinfo .config  # write changes to .config
+          make defconfig                                           # expand to full config
+
+      - name: make_download_libraries
+        run: |
+          echo "compiling_mode: ${{ inputs.compiling_mode }}"
+          
+          if [[ ${{ inputs.compiling_mode }} == 'download' || ${{ inputs.compiling_mode }} == 'single-threaded' ]]; then
+            make -j1 download V=s
+          else
+            make -j$(nproc) download || make -j1 download V=s
+          fi
+          
+          find dl -size -1024c -exec rm -f {} \;
+          
+      - name: compile_firmware
+        if: inputs.compiling_mode == 'single-threaded' || inputs.compiling_mode == 'multi-threaded'
+        run: |
+          echo "compiling_mode: ${{ inputs.compiling_mode }}"
+          
+          if [ ${{ inputs.compiling_mode }} == 'single-threaded' ]; then
+            make -j1 V=s
+          elif [ ${{ inputs.compiling_mode }} == 'multi-threaded' ]; then
+            make -j$(nproc) || make -j1 V=s
+          fi
+          
+          echo "-------------------space usage-------------------"
+          df -h
+          du -h --max-depth=1 ./ --exclude=build_dir --exclude=bin
+          du -h --max-depth=1 ./build_dir
+          du -h --max-depth=1 ./bin
+
+      - name: prepare_artifact
+        run: |
+          echo "compiling_mode: ${{ inputs.compiling_mode }}"
+          
+          if [[ ${{ inputs.compiling_mode }} == 'single-threaded' || ${{ inputs.compiling_mode }} == 'multi-threaded' ]]; then
+            mkdir -p ./artifact/firmware
+            rm -rf $(find ./bin/targets/  -type d -name "packages")
+            cp -rf $(find ./bin/targets/  -type f) ./artifact/firmware/
+            
+            # mkdir -p ./artifact/package
+            # mkdir -p ./artifact/buildinfo
+            # cp -rf $(find ./bin/packages/ -type f -name "*.ipk")                              ./artifact/package/
+            # cp -rf $(find ./bin/targets/  -type f -name "*.buildinfo" -o -name "*.manifest")  ./artifact/buildinfo/
+          fi
+          
+          tar zcvf ./dl.tar.gz ./dl
+
+      - name: deliver_packages
+        if: inputs.compiling_mode == 'single-threaded' || inputs.compiling_mode == 'multi-threaded'
+        uses: actions/upload-artifact@v3
+        with:
+          name: openwrt_packages
+          path: ./bin/packages/
+
+      - name: deliver_firmware
+        if: inputs.compiling_mode == 'single-threaded' || inputs.compiling_mode == 'multi-threaded'
+        uses: actions/upload-artifact@v3
+        with:
+          name: openwrt_firmware
+          path: ./artifact/firmware/
+
+      - name: deliver_dl_libraries
+        uses: actions/upload-artifact@v3
+        with:
+          name: openwrt_dl
+          path: ./dl.tar.gz
