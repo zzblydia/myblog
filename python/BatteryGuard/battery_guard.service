@@ -1,0 +1,16 @@
+[Unit]
+Description=Battery Guard Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/vol1/python/BatteryGuard/run.sh
+Restart=always
+RestartSec=5
+StartLimitInterval=60s
+StartLimitBurst=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

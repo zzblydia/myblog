@@ -1,0 +1,7 @@
+{
+  "local_ip" : "192.168.1.60",
+  "device_ip" : "192.168.1.94",
+  "device_token" : "aaaaa",
+  "battery_low_threshold": 70,
+  "battery_high_threshold": 90
+}
