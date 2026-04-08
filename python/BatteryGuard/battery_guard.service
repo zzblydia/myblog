@@ -4,6 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
+WorkingDirectory=/vol1/python/BatteryGuard/
 ExecStart=/vol1/python/BatteryGuard/run.sh
 Restart=always
 RestartSec=5
