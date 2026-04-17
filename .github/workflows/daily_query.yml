@@ -1,0 +1,44 @@
+name: Daily SIM Query
+
+on:
+  schedule:
+    # 每天 06:00 SGT (UTC+8) = 22:00 UTC 运行
+    - cron: '0 22 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install "python-telegram-bot[job-queue]" requests
+        working-directory: python/MyTelegramBot
+
+      - name: Generate config.json from secrets
+        working-directory: python/MyTelegramBot
+        env:
+          BOT_TOKEN:      ${{ secrets.BOT_TOKEN }}
+          ADMIN_USER_ID:  ${{ secrets.ADMIN_USER_ID }}
+          ORDER_ID:       ${{ secrets.ORDER_ID }}
+        run: |
+          cat > config.json << EOF
+          {
+              "bot_token"      : "${BOT_TOKEN}",
+              "admin_user_id"  : "${ADMIN_USER_ID}",
+              "order_id"       : "${ORDER_ID}",
+              "run_mode"       : "client"
+          }
+          EOF
+
+      - name: Run query
+        working-directory: python/MyTelegramBot
+        run: python my_telegram_bot.py
