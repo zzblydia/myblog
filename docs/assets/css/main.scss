@@ -1,0 +1,22 @@
+---
+---
+
+$max-width: 1500px;
+$x-large: 1500px;
+
+@import "minimal-mistakes";
+
+#main:not(:has(.sidebar)) .page {
+  width: 100%;
+}
+
+// Breadcrumb left-align with text (account for TOC sidebar on right)
+.breadcrumbs ol {
+  float: inline-start;
+  padding-inline-end: $right-sidebar-width-narrow;
+  width: 100%;
+
+  @include breakpoint($x-large) {
+    padding-inline-end: $right-sidebar-width;
+  }
+}

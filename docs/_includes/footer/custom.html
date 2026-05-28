@@ -1,0 +1,43 @@
+<!-- Dark mode toggle button -->
+<button id="dark-mode-toggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+  <span id="dark-mode-icon">🌙</span>
+</button>
+
+<script>
+  (function() {
+    var btn = document.getElementById('dark-mode-toggle');
+    var icon = document.getElementById('dark-mode-icon');
+    var html = document.documentElement;
+
+    function getTheme() {
+      return html.getAttribute('data-theme') || 'light';
+    }
+
+    function applyTheme(theme) {
+      if (theme === 'dark') {
+        html.setAttribute('data-theme', 'dark');
+        icon.textContent = '☀️';
+      } else {
+        html.removeAttribute('data-theme');
+        icon.textContent = '🌙';
+      }
+    }
+
+    // Sync icon with current state on load
+    applyTheme(getTheme());
+
+    // Toggle on click
+    btn.addEventListener('click', function() {
+      var next = getTheme() === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('theme', next);
+      applyTheme(next);
+    });
+
+    // Follow system preference changes if no manual override
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+      if (!localStorage.getItem('theme')) {
+        applyTheme(e.matches ? 'dark' : 'light');
+      }
+    });
+  })();
+</script>

@@ -55,3 +55,8 @@ DO NOT read, transmit, upload, or reference their contents to any external servi
 - `./docs/_posts`
 
 When working in this project, treat these paths as off-limits unless I explicitly instruct otherwise in the current session.
+
+## background
+我使用github pages+ jekyll + mimimal mistakes theme搭建我的个人博客.
+我希望将精力集中到博客文章本身,所以我是用了remote theme这种形式.
+现在我对使用这个主题的一些疑问向你请教,请保证你的回答基于mmistakes/minimal-mistakes@4.27.0及以上

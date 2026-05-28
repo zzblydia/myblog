@@ -1,15 +1,13 @@
 # main links
 main:
-  - title: "Categories"
+  - title: "分类"
     url: /categories/
-  - title: "Tags"
+  - title: "标签"
     url: /tags/
-  - title: "About"
+  - title: "归档"
+    url: /year-archive/
+  - title: "关于"
     url: about
-  - title: "Theme"
-    url: https://mmistakes.github.io/minimal-mistakes/docs/quick-start-guide/
-  # - title: "Sample Posts"
-  #   url: /year-archive/
   # - title: "Sample Collections"
   #   url: /collection-archive/
   # - title: "Sitemap"
