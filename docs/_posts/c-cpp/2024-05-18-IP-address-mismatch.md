@@ -2,7 +2,7 @@
 title:  "libwebsockets-IP-address-mismatch"
 date:   2024-05-20 18:19:00 +0800
 last_modified_at: 2024-05-18 02:32:00 +0800
-categories: websocket
+categories: c-cpp
 tags:
   - libwebsockets
   - openssl

@@ -2,8 +2,8 @@
 title:  "learn github pages"
 date:   2024-04-18 20:28:37 +0800
 last_modified_at: 2025-03-13 01:33:00 +0800
-categories: github
-tag: github_pages
+categories: blog
+tags: github_pages
 ---
 
 # 记录使用github pages搭建博客的认知过程  

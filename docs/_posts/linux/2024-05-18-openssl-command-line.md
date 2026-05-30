@@ -2,7 +2,8 @@
 title:  "openssl-command-line"
 date:   2024-05-18 02:30:00 +0800
 last_modified_at: 2024-05-21 19:58:00 +0800
-categories: openssl
+categories: linux
+tags: openssl
 ---
 
 # openssl command line  

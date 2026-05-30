@@ -2,7 +2,7 @@
 title:  "cmake commands"
 date:   2024-08-31 00:44:00 +0800
 last_modified_at: 2024-08-31 01:11:00 +0800
-categories: cmake
+categories: c-cpp
 tags: cmake
 ---
 

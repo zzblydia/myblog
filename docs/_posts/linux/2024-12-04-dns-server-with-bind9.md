@@ -2,7 +2,7 @@
 title:  "dns server with bind9"
 date:   2024-12-04 20:05:00 +0800
 last_modified_at: 2024-12-04 22:05:00 +0800
-categories: dns
+categories: linux
 tags: bind9
 ---
 

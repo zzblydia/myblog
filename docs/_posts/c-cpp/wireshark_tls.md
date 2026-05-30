@@ -1,3 +1,15 @@
+---
+title:  "wireshark decrypt TLS with libwebsockets"
+date:   2024-05-20 18:30:00 +0800
+last_modified_at: 2024-05-20 18:30:00 +0800
+categories: c-cpp
+tags:
+  - wireshark
+  - tls
+  - openssl
+  - libwebsockets
+---
+
 背景:
 
 使用libwebsockets作为客户端访问ASR/TTS websockets服务器, 由于使用SSL加密, tcpdump捕获的报文需要解密.

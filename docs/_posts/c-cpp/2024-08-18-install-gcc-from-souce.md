@@ -2,7 +2,7 @@
 title:  "install gcc 7.3.0 from souce"
 date:   2024-08-18 20:53:00 +0800
 last_modified_at: 2024-08-31 20:47:00 +0800
-categories: gcc
+categories: c-cpp
 tags: gcc7.3.0
 ---
 

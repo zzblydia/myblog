@@ -2,7 +2,7 @@
 title:  "about git"
 date:   2024-06-04 04:20:00 +0800
 last_modified_at: 2024-06-04 06:27:00 +0800
-categories: git
+categories: linux
 tags: git
 ---
 

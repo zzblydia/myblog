@@ -2,8 +2,8 @@
 title:  "jekyll theme minimal mistakes"
 date:   2025-03-13 01:30:00 +0800
 last_modified_at: 2025-03-13 02:00:00 +0800
-categories: jekyll
-tag: mmistakes
+categories: blog
+tags: mmistakes
 ---
 
 # jekyll theme minimal mistakes  

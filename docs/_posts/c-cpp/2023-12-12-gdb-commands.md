@@ -2,7 +2,7 @@
 title:  "gdb commands"
 date:   2023-12-12 06:33:33 +0800
 last_modified_at: 2024-08-31 20:41:00 +0800
-categories: gdb
+categories: c-cpp
 tags: gdb
 ---
 

@@ -2,7 +2,7 @@
 title:  "libwebsockets-build-on-ubuntu"
 date:   2024-05-18 01:33:00 +0800
 last_modified_at: 2024-05-18 02:27:00 +0800
-categories: websocket
+categories: c-cpp
 tags: libwebsockets
 ---
 
