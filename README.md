@@ -36,7 +36,6 @@ bundle exec jekyll serve --host 192.168.8.60
 - 启用代码复制按钮 `enable_copy_code_button: true`
 - 启用站内搜索 `search: true`（lunr，零外部依赖）
 - 启用面包屑导航 `breadcrumbs: true`
-- 添加副标题 `subtitle: "详细真实但不一定有趣的折腾"`
 - 导航栏新增"归档"入口
 - 页面宽度优化 `$max-width: 1500px`（`docs/assets/css/main.scss`）
 - 文章页去掉作者侧边栏，空白区域由正文填补
