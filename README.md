@@ -42,6 +42,6 @@ bundle exec jekyll serve --host 192.168.8.60
 - 面包屑从居中改为与正文左对齐
 - 隐藏文章底部社交分享按钮 `share: false`
 - 启用 giscus 评论系统（GitHub 登录，自动跟随暗色模式）
-- 首页添加 header overlay 配图 `home.png`
-- 文章页默认 header overlay 配图 `sea_blue.png`
+- 首页添加 header overlay 配图 `home.jpg`
+- 文章页默认 header overlay 配图 `sea_blue.jpg`
 
