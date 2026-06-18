@@ -72,5 +72,4 @@ DO NOT read, transmit, upload, or reference its contents to any external service
 Working with the theme, layout, or config does not require reading post bodies.  
 
 ## 约束
-
 处理 `mmistakes/minimal-mistakes` 主题相关问题时,请以本仓库使用的版本号(`4.28.0`)及官方最新资料为准,确保回答准确。
