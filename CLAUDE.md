@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to agent when working with code in this repository.
 
 ## Overview
 
@@ -13,19 +13,23 @@ All site source lives under `docs/` — never run Jekyll commands from the repo 
 
 ```bash
 cd docs
-bundle install            # first time, or after a Gemfile change
+bundle install          # first time or after Gemfile change
 bundle exec jekyll serve  # http://localhost:4000/myblog
 ```
 
-- `baseurl: /myblog`, so local URLs include the `/myblog` prefix.
-- `_config.yml` is **not** hot-reloaded — restart the server after editing it.
-- `docs/_site/` is Jekyll's build output (gitignored, regenerated on serve/build).
-- `Gemfile` pins Jekyll via the `github-pages` gem to keep parity with GitHub Pages. `tzinfo-data` is included for Windows.
+All site source lives under `docs/` — never run jekyll commands from repo root.
 
-## Branch Structure
+## Architecture
 
-- `githubpages` — working branch; **GitHub Pages deploys from this branch's `docs/` folder**.
-- `master` — repository default branch (origin/HEAD). PRs usually target this.
+- GitHub Pages deploys from `githubpages` branch, `docs/` folder
+- Remote theme: `mmistakes/minimal-mistakes@4.28.0` (skin: `air`) — custom overrides live in `docs/_includes/`
+- Custom CSS: `docs/assets/css/main.scss` (overrides `$max-width: 1500px`, sidebar width fix, breadcrumb alignment)
+- Dark mode: implemented via `docs/_includes/head/custom.html` and `docs/_includes/footer/custom.html` (`data-theme` attribute)
+- `baseurl: /myblog` — local URLs include this prefix
+- `_config.yml` changes require **server restart** (not hot-reloaded)
+- `Gemfile` uses `github-pages` gem (pins Jekyll version for GitHub Pages compatibility)
+- Windows needs `tzinfo-data` gem (already in Gemfile)
+- `docs/_site/` is the Jekyll build output — gitignored, generated on `jekyll serve` or `jekyll build`
 
 ## Adding Posts
 
@@ -44,27 +48,24 @@ tags: <tag>
 ---
 ```
 
-Post defaults (`_config.yml`): `layout: single`, `author_profile: false`, `toc: true` + `toc_sticky: true`, `comments: true`, `share: false`, `related: true`, and a default `header.overlay_image` (`/assets/images/sea_blue.jpg`).  
-Permalink is `/:categories/:title/`; pagination shows 20 posts/page.  
+- Permalink: `/:categories/:title/`
+- Paginate: 20 posts per page
 
-## Theme Customization (the parts that need reading multiple files)
+## Key Files
 
-Since the theme is remote, customizations are layered on top via override files:
-
-- `docs/assets/css/main.scss` — custom SCSS: `$max-width: 1500px`, post-page sidebar width fix, breadcrumb left-alignment.
-- `docs/_includes/head/custom.html` — dark-mode styles + anti-flash-of-unstyled-content script (uses a `data-theme` attribute).
-- `docs/_includes/footer/custom.html` — the dark-mode toggle button.
-- `docs/_data/navigation.yml` — top nav (分类 / 标签 / 归档 / 关于).
-- `docs/_pages/` — static archive pages (category / tag / year) + about. Archives are the GitHub-Pages-compatible Liquid type, so these pages must exist or breadcrumbs break.
-- `docs/index.html` — site entry / home (header overlay `home.jpg`).
-
-Enabled features in `_config.yml`: `enable_copy_code_button`, `breadcrumbs`, lunr `search`, and **giscus** comments (`comments.provider: giscus`, GitHub-login based, follows the color scheme).
+- `docs/_config.yml` — site config, theme, plugins, defaults, comments (giscus)
+- `docs/_data/navigation.yml` — top nav (分类, 标签, 归档, 关于)
+- `docs/_pages/` — static archive pages
+- `docs/index.html` — site entry
+- `docs/assets/css/main.scss` — custom SCSS (max-width, sidebar, breadcrumb)
+- `docs/_includes/head/custom.html` — dark mode styles + anti-flash script
+- `docs/_includes/footer/custom.html` — dark mode toggle button
 
 ## Plugins
 
 `jekyll-paginate`, `jekyll-sitemap`, `jekyll-gist`, `jekyll-feed`, `jekyll-include-cache`.
 
-## Privacy & Data Handling
+## Privacy
 
 `./docs/_posts` contains private/personal content.  
 DO NOT read, transmit, upload, or reference its contents to any external service, API, or internet endpoint unless explicitly instructed in the current session.  
