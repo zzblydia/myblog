@@ -1,7 +1,7 @@
 ---
 title:  "深度使用 Ubuntu"
 date:   2026-05-24 05:30:00 +0800
-last_modified_at: 2026-07-09 20:09:00 +0800
+last_modified_at: 2026-08-01 11:28:00 +0800
 categories: linux
 tags: ubuntu
 ---
@@ -31,18 +31,22 @@ tags: ubuntu
     因为穷, 潜意识里就会总想着能买到性价比高的. 同时, 商品的丰富增加了购物难度和购物成本（时间）.
 
 ## 折腾日记  
+这个笔记本的早期印象，再加上第一次全面使用ubuntu，决定了后面估计会很折腾。
 
 ### 无尽的折腾
+#### 输入法  
+使用的是系统自带的PinYin输入法,不是很好用，尤其是中英文切换的时候。  
+有时候遇到bug光标会迅速退格键把内容都删光，几乎没有联想记忆功能，其他软件闪退怀疑也和它有关。  
 
-| 时间 | 内容 | 结果 |
-| --- | --- | --- |
-| 2026-07-07 | 无比怀念 windows下的 source insight and beyond compare and tortoisegit | NULL |
-| 2026-06-10 | Chrome & Cursor crash | Reboot |
-| 2026-05-25 | Install input method & build tools | Works but input method is terrible |
+#### code  
+开始觉得都ai时代了，直接装个`cursor`吧，这不是就套皮的`vscode`嘛，结果经常闪退，后来重新安装了vscode.  
+windows下对于C语言友善的`source insight`， 比较工具`beyond compare`, git界面化工具`tortoisegit`都不能用了。
 
+#### 浏览器  
+依然安装了chrome
 
-### 2026-05-24 初始系统安装
-从早上 5:30 一直装到 8:00, 直到换了三个版本才成功.
+### 初始系统安装
+2026-05-24早上从 5:30 一直装到 8:00, 直到换了三个版本才成功.
 
 | 版本            | 结果   | 原因                                          |
 | --------------- | ------ | --------------------------------------------- |
