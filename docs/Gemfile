@@ -1,6 +1,8 @@
 source "https://rubygems.org"
 
-gem "github-pages", group: :jekyll_plugins
+# github-pages 232 起依赖 liquid 4.0.4; 更早版本锁定的 liquid 4.0.3 会调用
+# Ruby 3.2 已移除的 Object#tainted?, 导致 jekyll 渲染时崩溃
+gem "github-pages", ">= 232", group: :jekyll_plugins
 gem "jekyll-include-cache", group: :jekyll_plugins
 
 gem 'tzinfo-data', platforms: [:windows]
