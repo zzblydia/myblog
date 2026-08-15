@@ -17,7 +17,7 @@ bundle install          # first time or after Gemfile change
 bundle exec jekyll serve  # http://localhost:4000/myblog
 ```
 
-All site source lives under `docs/` — never run jekyll commands from repo root.
+Verify changes with `bundle exec jekyll build` (from `docs/`) — Jekyll errors surface here before deploy.
 
 ## Architecture
 
@@ -50,6 +50,7 @@ tags: <tag>
 
 - Permalink: `/:categories/:title/`
 - Paginate: 20 posts per page
+- Drafts: set `published: false` to exclude a post from the build
 
 ## Key Files
 
@@ -64,6 +65,8 @@ tags: <tag>
 ## Plugins
 
 `jekyll-paginate`, `jekyll-sitemap`, `jekyll-gist`, `jekyll-feed`, `jekyll-include-cache`.
+
+GitHub Pages builds with `--safe`: new plugins must be GitHub Pages-supported gems and be listed in **both** `plugins` and `whitelist` in `_config.yml`. Several blocks in `_config.yml` are intentionally disabled (`pagination` v2, `jekyll-archives`, analytics, Algolia/Google search) — don't enable them.
 
 ## Privacy
 

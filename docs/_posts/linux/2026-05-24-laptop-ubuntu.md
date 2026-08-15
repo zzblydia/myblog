@@ -1,5 +1,5 @@
 ---
-title:  "深度使用 Ubuntu"
+title:  "浅度使用Ubuntu"
 date:   2026-05-24 05:30:00 +0800
 last_modified_at: 2026-08-01 11:28:00 +0800
 categories: linux
@@ -7,6 +7,8 @@ tags: ubuntu
 ---
 
 # 笔记本电脑安装使用 Ubuntu 22.04
+
+**20260815:已经背叛ubuntu 22.04 选择了debian 13.6**  
 
 ## 背景
 1. 朋友淘汰了一台 2018 款的 `联想拯救者` 笔记本电脑送给我, 这台电脑以前的 Windows 系统就是我安装的.  
