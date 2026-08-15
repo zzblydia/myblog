@@ -134,6 +134,14 @@ sudo vi /etc/docker/daemon.json
 }
 ```
 
+#### tcpdump  
+```
+sudo apt install tcpdump
+
+# 普通用户也能使用
+sudo setcap cap_net_raw,cap_net_admin=eip /usr/bin/tcpdump
+```
+
 #### others
 ```
 telegram
