@@ -15,13 +15,17 @@ tags: debian
 [前情提要](https://zzblydia.github.io/myblog/linux/laptop-ubuntu/)  
 
 ## 后期体验  
-未完待续
+### 20260820
+1.`fcitx5`输入法非常好用,中英文切换简单， 联想词汇多，没有副作用，不会出现`门`字显示异常。  
+2.各类软件(vscode cursor chrome)暂时没有出现过coredump，甚至软件商店还能检测更新这些软件了。  
+3.习惯了没有任务栏，应用都是全屏，切换应用习惯了用windows键而不是Tab。  
+4.再也不用因为不了解细节纠结使用`Ubuntu`还是`Debian`了，后者拥抱`non-free`软件源后我选择无条件使用。  
 
 ## 安装记录  
 1.在Windows环境使用`Ventoy`制作多系统启动U盘,并把镜像`debian-13.6.0-amd64-DVD-1.iso`放进去  
 2.在笔记本电脑A上使用VMware Workstation安装了一把测试镜像没有问题  
 3.修改笔记本电脑B的BIOS系统顺序,调整启动顺序,U盘启动第一位  
-4.安装语言English,键盘选择Singapore,不使用网络镜像(net mirror),会跳过主机名设置  
+**4.安装语言English,键盘选择Singapore,不使用网络镜像(net mirror),会跳过主机名设置**  
 5.安装后进入系统,能正常连接wifi,触摸板正常,键盘正常  
 6.刚开始桌面左侧没有快捷方式,还有点不习惯  
 7.最大的提升是放弃了输入法`IBus`,而选择了`fcitx5`  
