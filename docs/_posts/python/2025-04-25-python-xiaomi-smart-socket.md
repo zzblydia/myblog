@@ -6,7 +6,8 @@ categories: python
 tags: xiaomi-switch
 ---
 
-# 针对小米插座自动化的脚本  
+针对小米插座自动化的脚本  
+
 My laptop battery is swollen because of long-time charging.  
 After I bought a new battery, I decided to find out how to auto-charge using the Xiaomi Smart Socket 3.  
 My target is as follows:  

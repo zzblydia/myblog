@@ -20,3 +20,62 @@ $x-large: 1500px;
     padding-inline-end: $right-sidebar-width;
   }
 }
+
+// Article page typography optimization
+.page__content {
+  font-size: 0.93em; // Reduce from default ~16px to ~14.88px
+  line-height: 1.5; // Tighter line height for more compact feel
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+  }
+}
+
+.page__title {
+  font-size: 1.8em; // Reduce from 2.5em
+  margin-bottom: 0.5em;
+  margin-top: 0.2em;
+}
+
+// Reduce header image overlay height & hide text overlay
+.page__hero {
+  &--overlay {
+    height: auto;
+    min-height: 240px; // 80% of 300px
+
+    @include breakpoint($medium) {
+      min-height: 200px; // 80% of 250px
+    }
+
+    // Hide title and subtitle text on overlay image
+    .page__title,
+    .page__subtitle,
+    .page__excerpt,
+    .page__lead {
+      display: none;
+    }
+  }
+}
+
+// Reduce teaser/article list images to 80%
+.archive__item-teaser {
+  max-height: 220px; // Reduce teaser image height
+  overflow: hidden;
+}
+
+// Adjust entry header spacing
+.entry-header {
+  margin-bottom: 1em;
+}
+
+// Optimize content width and reduce right sidebar whitespace
+.sidebar {
+  margin-top: 2em;
+}
+
+// Tighter spacing for article metadata
+.page__meta {
+  font-size: 0.85em;
+  margin-bottom: 1em;
+}

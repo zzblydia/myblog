@@ -6,7 +6,7 @@ categories: linux
 tags: bind9
 ---
 
-# dns server with bind9  
+dns server with bind9  
 
 ## 1. install on ubuntu  
 bind: Berkeley Internet Name Domain  

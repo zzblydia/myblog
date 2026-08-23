@@ -8,7 +8,7 @@ tags:
   - openssl
 ---
 
-探究报错`SSL error: IP address mismatch (preverify_ok=0;err=64;depth=0)`  
+`SSL error: IP address mismatch (preverify_ok=0;err=64;depth=0)`  
 
 
 ## 问题  

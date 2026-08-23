@@ -5,8 +5,7 @@ last_modified_at: 2026-08-01 11:28:00 +0800
 categories: linux
 tags: ubuntu
 ---
-
-# 笔记本电脑安装使用 Ubuntu 22.04
+笔记本电脑安装使用 Ubuntu 22.04
 
 **20260815:已经背叛ubuntu 22.04 选择了debian 13.6**  
 

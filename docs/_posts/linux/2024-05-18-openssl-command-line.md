@@ -6,7 +6,7 @@ categories: linux
 tags: openssl
 ---
 
-# openssl command line  
+openssl command line  
 
 1.显示证书内容  
 ```

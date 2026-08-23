@@ -7,7 +7,7 @@ tags: ebpf
 published: false
 ---
 
-# Processing of network packets on Linux  
+Processing of network packets on Linux  
 
 <!-- 网络数据包在linux上的的处理过程 -->
 <!-- 收到的udp消息从网卡到内核到进程套接字, 都经历了哪些处理过程, 每个处理点如果丢包, 有哪些现象, 如何定位丢包点 -->

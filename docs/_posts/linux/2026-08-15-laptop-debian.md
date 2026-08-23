@@ -6,7 +6,7 @@ categories: linux
 tags: debian
 ---
 
-# 笔记本电脑安装使用Debian13.6 trixie
+笔记本电脑安装使用Debian13.6 trixie
 
 **最终背叛了Ubuntu 22.04 选择了Debian 13.6 哈哈哈 后悔死我了没早点换 新系统太爽了 笑出声**  
 因为Ubuntu系统里已经配置了开发环境,在鼓起勇气换系统前问了Gemini和Claude很多次更换系统的风险和收益,最终还是决定梭一把  

@@ -5,8 +5,9 @@ last_modified_at: 2025-03-12 05:12:00 +0800
 categories: linux
 tags: PolicyRoute
 ---
+经历一些策略路由.    
 
-#  Experience with policy routing  
+##  Experience with policy routing  
 I faced a problem that I couldn't ping, and then I experienced policy routing.   
 Now the simplified scenario is as follows.  
 
