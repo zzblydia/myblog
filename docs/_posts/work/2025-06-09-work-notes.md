@@ -6,13 +6,15 @@ categories: work
 tags: issues
 ---
 
-# some notes in work  
+some notes in work
 
 ## issues list  
 
-### 20250609  
-insmod self-defined kernel module on suse11sp3 error `Unknown symbol __x86_indirect_thunk_r11 (err 0)`  
-```
+### 20250609
+
+insmod self-defined kernel module on suse11sp3 error `Unknown symbol __x86_indirect_thunk_r11 (err 0)`
+
+```text
 The self-defined kernel was compiled on suse11sp3 with kernel version 3.0.101-0.47.106 with `CONFIG_RETPOLINE=y`  
 When it runs on suse11sp3 with kernel version 3.0.101-0.47.90, it shows error above.  
 

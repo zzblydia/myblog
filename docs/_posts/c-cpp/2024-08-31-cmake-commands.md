@@ -6,23 +6,26 @@ categories: c-cpp
 tags: cmake
 ---
 
-# some notes of cmake  
+## 1. Common Usage
 
-## 1. common usage
-1> **cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON**  
-This option tells CMake to generate a verbose Makefile.  
-When you run make, it will display each compilation and linking step, which is very useful for debugging the build process.  
+1. **cmake .. -DCMAKE_VERBOSE_MAKEFILE=ON**
 
-2> **cmake .. --trace-expand**  
-This option enables tracing, which means that every command executed by CMake during configuration will be printed, along with all relevant variables expanded to their actual values at that moment.  
-This is particularly useful for debugging complex configurations and understanding how variables affect the build process.  
+This option tells CMake to generate a verbose Makefile.
+When you run make, it will display each compilation and linking step, which is very useful for debugging the build process.
 
-3> **cmake .. -DCMAKE_BUILD_TYPE=type**  
-This option sets the build type, which can affect compiler flags and optimizations. Common values for `type` include:  
-(1)**Debug**: Enables debugging information and disables optimizations. (maybe **-g**)  
-(2)**Release**: Enables optimizations and disables debugging information. (maybe **-O3 -DNDEBUG**)  
-(3)**RelWithDebInfo**: Combines optimization with debugging information. (maybe **-O2 -g -DNDEBUG**)  
-(4)**MinSizeRel**: Optimizes for minimum size. (maybe **-Os -DNDEBUG**)  
+2. **cmake .. --trace-expand**
 
-## 2. Reference  
+This option enables tracing, which means that every command executed by CMake during configuration will be printed, along with all relevant variables expanded to their actual values at that moment.
+This is particularly useful for debugging complex configurations and understanding how variables affect the build process.
+
+3. **cmake .. -DCMAKE_BUILD_TYPE=type**
+
+This option sets the build type, which can affect compiler flags and optimizations. Common values for `type` include:
+
+   - **Debug**: Enables debugging information and disables optimizations. (maybe **-g**)
+   - **Release**: Enables optimizations and disables debugging information. (maybe **-O3 -DNDEBUG**)
+   - **RelWithDebInfo**: Combines optimization with debugging information. (maybe **-O2 -g -DNDEBUG**)
+   - **MinSizeRel**: Optimizes for minimum size. (maybe **-Os -DNDEBUG**)
+
+## 2. References  
 [cmake latest document](https://cmake.org/cmake/help/latest/manual/cmake.1.html)

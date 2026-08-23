@@ -11,9 +11,9 @@ tags: bind9
 ## 1. install on ubuntu  
 bind: Berkeley Internet Name Domain  
 ```
-sudo apt-get install bind  
-systemctl status named  
-systemctl restart named  
+sudo apt-get install bind9
+systemctl status named
+systemctl restart named
 ```
 
 ## 2. configuration
@@ -47,8 +47,9 @@ $TTL    604800
 www     IN      A       192.168.23.62
 ```
 
-## 3. check on client machine  
-**add "nameserver 192.168.8.52" in /etc/resolv.conf of client machine**  
+## 3. check on client machine
+
+**add "nameserver 192.168.23.52" in /etc/resolv.conf of client machine**  
 
 **dig goodluck.com**  
 ```

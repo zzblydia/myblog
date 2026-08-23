@@ -89,7 +89,7 @@ git branch -m old_branch_name new_branch_name
 git commit --amend
 
 提交本地修改
-git commit -m "message
+git commit -m "message"
 ```
 
 ### git rebase
@@ -101,10 +101,10 @@ git rebase -i HEAD~3
 git rebase upstream/main
 ```
 
-### git cherry
+### git cherry-pick
 ```
 摘取某次提交到当前分支
-git cherry pick commit_hash
+git cherry-pick commit_hash
 ```
 
 ## git practice 

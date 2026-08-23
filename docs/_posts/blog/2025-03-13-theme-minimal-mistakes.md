@@ -1,39 +1,30 @@
 ---
-title:  "jekyll theme minimal mistakes"
+title:  "Jekyll Theme Minimal Mistakes"
 date:   2025-03-13 01:30:00 +0800
 last_modified_at: 2025-03-13 02:00:00 +0800
 categories: blog
 tags: mmistakes
 ---
 
-# jekyll theme minimal mistakes  
+简单介绍对 Jekyll Theme Minimal Mistakes 的认知.
 
- 
-## 三种使用主题的方法  
+## 三种使用主题的方法
 
-### gem theme  
-适合自托管（Self-hosting）, 指的是你自己负责运行和托管 Jekyll 生成的网站  
+### Gem Theme
 
-### remote theme  
-简单化引入, 下载远程主题的文件时不会覆盖本地文件, 从而依然可以定制化.  
+自托管 (Self-hosting), 使用自己的机器构建和部署主题.
 
-### fork repo  
-高度定制化.  
+### Remote Theme
 
+使用远程主题，不用下载官方代码，主题和风格使用官方仓库的设定，同时可以在本地添加一些文件进行定制。
 
-## 初期使用方式  
-fork仓库后, 我做了哪些改动  
-```
-1. _config.yml  
-2. _data/navigation.yml  
-```
+### Fork Repo
 
+下载官方分支全部代码，使用本地代码进行构建，并把产物推送到远端进行部署，能实现高度定制化.
 
-## 后期使用方式  
+## 历史疑问
 
-
-## todo
-1.如何按标签和tag归类文章  
-2.post的文章如何使用主题  
-3.分页帖子数量  
-4.博客正文太细长, 影响阅读体验, 如何按照屏幕自动适配?--->使用layout splash  
+1. 如何按标签和 tag 归类文章
+2. post 的文章如何使用主题
+3. 分页帖子数量
+4. 博客正文太细长, 影响阅读体验, 如何按照屏幕自动适配? 使用 layout splash  

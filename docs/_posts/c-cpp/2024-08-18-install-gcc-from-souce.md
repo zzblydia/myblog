@@ -1,33 +1,34 @@
 ---
-title:  "install gcc 7.3.0 from souce"
+title:  "install gcc 7.3.0 from source"
 date:   2024-08-18 20:53:00 +0800
 last_modified_at: 2024-08-31 20:47:00 +0800
 categories: c-cpp
-tags: gcc7.3.0
+tags: gcc
 ---
+源码安装 gcc 7.3.0  
 
-# install gcc 7.3.0 from souce  
+## 1. prepare compiling
 
-## 1. Some notes on compiling  
-1> Some [dependencies](https://gcc.gnu.org/install/prerequisites.html) are necessary for compiling.  
-They are **gmp-6.1.0, mpfr-3.1.4, mpc-1.0.3**, isl-0.16.1 for gcc 7.3.0.  
-You can download them by run shell **`download_prerequisites`** when there is Internet.  
-Or you can install the packages libgmp-dev, libmpfr-dev and libmpc-dev for debian(or ubuntu).  
-Or you can download them manually.  
+Some [dependencies](https://gcc.gnu.org/install/prerequisites.html) are necessary for compiling.
+**They are gmp-6.1.0, mpfr-3.1.4, mpc-1.0.3, isl-0.16.1 for gcc 7.3.0**.
+You can download them by run shell **`download_prerequisites`** when there is Internet.
+Or you can install the packages libgmp-dev, libmpfr-dev and libmpc-dev for debian(or ubuntu).
+Or you can download them manually.
 
-(1) GNU Multiple Precision Library (GMP). It can be [downloaded](https://gmplib.org/).  
-(2) MPFR Library. It can be [downloaded](https://www.mpfr.org).  
-(3) MPC Library. It can be [downloaded](https://www.multiprecision.org/mpc/).  
-(4) isl Library. It can be [downloaded](https://gcc.gnu.org/pub/gcc/infrastructure/).  
+(1) GNU Multiple Precision Library (GMP). It can be [downloaded](https://gmplib.org/).
+(2) MPFR Library. It can be [downloaded](https://www.mpfr.org).
+(3) MPC Library. It can be [downloaded](https://www.multiprecision.org/mpc/).
+(4) isl Library. It can be [downloaded](https://gcc.gnu.org/pub/gcc/infrastructure/).
 
-2>**Do not run ./configure from within the source directory, this is not supported.**  
+**Do not run ./configure from within the source directory, this is not supported.**
 You need to run configure from outside the source directory, in a separate directory created for the build.  
 
 
-## 2. Install From source  
-[releases web page](https://gcc.gnu.org/releases.html) or [github releases](https://github.com/gcc-mirror/gcc/tags) for gcc src code.  
+## 2. Install From source
 
-```
+[releases web page](https://gcc.gnu.org/releases.html) or [github releases](https://github.com/gcc-mirror/gcc/tags) for gcc src code.
+
+```bash
 # Prepare building toolchain  
 apt install gcc     # version >= 4.8.3  
 apt install make    # version >= 3.8  

@@ -1,29 +1,32 @@
 ---
 title:  "libwebsockets-IP-address-mismatch"
 date:   2024-05-20 18:19:00 +0800
-last_modified_at: 2024-05-18 02:32:00 +0800
+last_modified_at: 2026-08-23 11:48:00 +0800
 categories: c-cpp
 tags:
   - libwebsockets
   - openssl
 ---
 
-# SSL error: IP address mismatch (preverify_ok=0;err=64;depth=0)  
+探究报错`SSL error: IP address mismatch (preverify_ok=0;err=64;depth=0)`  
 
 
 ## 问题  
 集成libwebsockets作为测试客户端和测试服务端进行websockets通信.  
 
 测试服务端使用的证书是libwebsockets cmake默认生成的libwebsockets-test-server.pem,  
-SSL加密时ssl_connection未启用LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK, 连接服务端时报错:  
-**E: SSL error: IP address mismatch (preverify_ok=0;err=64;depth=0)**  
-E: CLIENT_CONNECTION_ERROR  
+SSL加密时ssl_connection未启用LCCSCF_SKIP_SERVER_CERT_HOSTNAME_CHECK, 连接服务端时报错:
+
+```
+E: SSL error: IP address mismatch (preverify_ok=0;err=64;depth=0)
+E: CLIENT_CONNECTION_ERROR
+```  
 
 
 ## 探索
-看到这个报错时, 我感到强烈的好奇, 既然说是ip地址不匹配, 那是哪两个字符串不匹配呢, 代码里一定有类似strcmp的操作.  
+看到这个报错时, 我感到强烈的好奇, 既然说是 IP 地址不匹配, 那是哪两个字符串不匹配呢, 代码里一定有类似 strcmp 的操作.  
 根据libwebsockets的源码发现报错的函数是OpenSSL_client_verify_callback, 这是一个ssl证书校验的回调函数.  
-[源码编译openssl-3.0.12带符号表版本](https://zzblydia.github.io/myBlog/openssl/openssl-build-install/), 对测试客户端进行gdb调试获取调用栈:  
+[源码编译openssl-3.0.12带符号表版本](https://zzblydia.github.io/myblog/linux/openssl-build-install-on-ubuntu/), 对测试客户端进行gdb调试获取调用栈:  
 ```
 #0  OpenSSL_client_verify_callback (preverify_ok=0, x509_ctx=0x55555564cfd0) at /opt/packages/libwebsockets/lib/tls/openssl/openssl-client.c:93
 #1  verify_cb_cert (ctx=0x55555564cfd0, x=0x555555646460, depth=0, err=64) at crypto/x509/x509_vfy.c:163

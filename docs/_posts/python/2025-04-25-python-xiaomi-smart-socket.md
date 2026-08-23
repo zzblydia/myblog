@@ -4,12 +4,11 @@ date:   2025-04-25 00:08:00 +0800
 last_modified_at: 2025-04-29 06:45:00 +0800
 categories: python
 tags: xiaomi-switch
-published: false
 ---
 
-# Python for Xiaomi Smart Socket  
+# 针对小米插座自动化的脚本  
 My laptop battery is swollen because of long-time charging.  
-After I bought a new one, I decided to find out how to auto-charge using the Xiaomi Smart Socket 3.  
+After I bought a new battery, I decided to find out how to auto-charge using the Xiaomi Smart Socket 3.  
 My target is as follows:  
 
 ```
@@ -18,14 +17,12 @@ My target is as follows:
 3. When the laptop is shut down, it stops charging.
 ```
 
-## 过程  
+## 尝试失败  
 以下两种方式都获取失败, 原因是遇到账号需要短信二次验证..  
 
-1>miiocli cloud  
-[python-miio](https://github.com/rytilahti/python-miio)  
+ - miiocli cloud [python-miio](https://github.com/rytilahti/python-miio)  
 
-2>token_extractor.py  
-[Home Assistant](https://www.home-assistant.io/integrations/xiaomi_miio#retrieving-the-access-token)  
+ - token_extractor.py [Home Assistant](https://www.home-assistant.io/integrations/xiaomi_miio#retrieving-the-access-token)  
 
 ## 转机  
 [通过python控制米家中的智能设备](https://blog.ulna520.top/2024/09/19/mijia/)  
@@ -37,18 +34,17 @@ piid, 可以理解为参数id
 
 [米家智能插座3 actions和parameters](https://home.miot-spec.com/spec/cuco.plug.v3)  
 
-```
-查询固件版本等信息
+```sh
+# 查询固件版本等信息
 miiocli device --ip IP --token abcde info  
 
-开
+# 开
 miiocli -d device --ip IP --token abcde raw_command set_properties "[{'did': 'MYDID', 'siid': 2, 'piid': 1, 'value':True}]"
 
-
-关
+# 关
 miiocli -d device --ip IP --token abcde raw_command set_properties "[{'did': 'MYDID', 'siid': 2, 'piid': 1, 'value':False}]"
 
-获取开关状态
+# 获取开关状态
 miiocli -d device --ip IP --token abcde raw_command get_properties "[{'did': 'MYDID', 'siid': 2, 'piid': 1}]"
 ```
 
