@@ -18,6 +18,10 @@ tags: debian
 ### 20260820
 1.`fcitx5`输入法非常好用,中英文切换简单， 联想词汇多，没有副作用，不会出现`门`字显示异常。  
 2.各类软件(vscode cursor chrome)暂时没有出现过coredump，甚至软件商店还能检测更新这些软件了。  
+```
+apt list --upgradable
+apt install --only-upgrade package_name
+```
 3.习惯了没有任务栏，应用都是全屏，切换应用习惯了用windows键而不是Tab。  
 4.再也不用因为不了解细节纠结使用`Ubuntu`还是`Debian`了，后者拥抱`non-free`软件源后我选择无条件使用。  
 
