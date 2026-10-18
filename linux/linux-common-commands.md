@@ -1,5 +1,13 @@
 # linux common commands  
 
+## atp
+```
+apt list --upgradable # 查看可升级的软件
+sudo apt install --only-upgrade code # 升级vscode
+sudo apt install --only-upgrade cursor # 升级cursor
+sudo apt install --only-upgrade google-chrome-stable # 升级google chrome
+```
+
 ## ls -lrth  
 ## strace  
 ```
