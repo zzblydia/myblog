@@ -1,11 +1,11 @@
 # MyTelegramBot
 
-一个自用的 Telegram 机器人:查询 Singtel/t-sim 手机套餐余量,并推送给管理员。
+一个自用的 Telegram 机器人:查询 Singtel/t-sim 手机套餐余量推送给管理员,并在每天早晨把「60 秒读懂世界」新闻发布到指定频道。
 
-支持两种运行方式,共用同一套查询逻辑:
+支持两种运行方式:
 
-- **server 模式**:进程常驻,实时响应管理员的查询指令,并在每天固定时间自动推送一次;
-- **client 模式**:由外部定时器(GitHub Actions)触发,查询一次、推送一次、随即退出。
+- **server 模式**:进程常驻,实时响应管理员的查询指令,并在每天固定时间自动推送一次套餐余量;同时记录频道帖子里的频道 ID;
+- **client 模式**:由外部定时器(GitHub Actions)触发,按 `client_task` 执行一次「查套餐」或「发新闻」,随即退出。
 
 ---
 
@@ -41,23 +41,27 @@ mkdir -p config
 cp config/config.example.json config/config.json
 ```
 
-然后填写四个字段:
+然后填写以下字段:
 
 | 字段 | 含义 | 说明 |
 |---|---|---|
 | `bot_token` | BotFather 发放的 token | 必填;仍是 `REPLACE_WITH_...` 时程序会拒绝启动 |
-| `admin_user_id` | 管理员的 Telegram 用户 ID | 为空时只记录消息、不响应任何指令、不推送 |
-| `order_id` | 订单号,查询接口的 `reference` 参数 | 必填,否则查询会失败 |
+| `admin_user_id` | 管理员的 Telegram 用户 ID | server 模式为空时只记录消息、不响应指令;`client_task=singtel` 时必填 |
+| `order_id` | 订单号,查询接口的 `reference` 参数 | `client_task=singtel` 时必填,否则启动即失败 |
+| `news_channel_id` | 新闻推送目标频道 | 支持 `@username`、`https://t.me/username`、`-100` 开头的数字 ID;`client_task=news` 时必填 |
 | `run_mode` | `server` 或 `client` | 决定进程行为 |
+| `client_task` | `singtel` 或 `news` | 仅 client 模式生效;缺省为 `singtel`,老配置行为不变 |
 
 示例(占位值,不能直接运行):
 
 ```json
 {
-    "bot_token"     : "REPLACE_WITH_BOT_TOKEN",
-    "admin_user_id" : "123456789",
-    "order_id"      : "123456",
-    "run_mode"      : "server"
+    "bot_token"       : "REPLACE_WITH_BOT_TOKEN",
+    "admin_user_id"   : "123456789",
+    "order_id"        : "123456",
+    "news_channel_id" : "@my_channel",
+    "run_mode"        : "server",
+    "client_task"     : "singtel"
 }
 ```
 
@@ -69,18 +73,33 @@ cp config/config.example.json config/config.json
 # 长期在线(server 模式)
 .venv/bin/python main.py
 
-# 一次性查询(client 模式):先把 run_mode 改成 client,再执行同一条命令
+# 一次性任务(client 模式):先把 run_mode 改成 client,再按 client_task 执行
+.venv/bin/python main.py
 ```
+
+client 模式下任务由 `config.json` 的 `client_task` 决定,不需要命令行参数:
+
+- `client_task = "singtel"`(缺省):查询套餐余量并发给 `admin_user_id`;
+- `client_task = "news"`:拉取当日新闻并发布到 `news_channel_id`。
 
 也可以直接在 PyCharm 里以 `main.py` 为脚本运行;注意 Working directory 必须是项目根目录 `python/MyTelegramBot`,否则 `bot/`、`init/`、`business/` 无法导入。
 
-### 5. 机器人指令
+### 5. 机器人指令与频道 ID
 
-| 指令 | 发送者 | 行为 |
+| 指令 / 行为 | 发送者 | 行为 |
 |---|---|---|
 | `/query singtel` | 仅 `admin_user_id` 本人 | 立即查询并回复套餐名称、失效时间、用量 |
+| 频道帖子 | 频道管理员(含 bot 自己) | 只记录 `channel_id` / 频道标题,不回复 |
 
 其他人的消息、其他指令一律忽略;server 模式仍会记录消息日志。
+
+**获取频道数字 ID**:把 bot 加进频道并设为**管理员**(否则 Telegram 不会下发频道帖子),server 模式下在频道里发一条消息,日志中会出现:
+
+```text
+Channel post - channel_id: -1001234567890, channel_title: xxx, username: xxx, ...
+```
+
+把 `-1001234567890` 填入 `news_channel_id` 即可。该日志接口永久保留,不要删除。公开频道也可以直接填 `@username`;`t.me/+xxxx` 形式的邀请链接无法被 Bot API 解析。
 
 ### 6. 日志
 
@@ -102,14 +121,15 @@ python/MyTelegramBot/
 │   ├── config.json             # 本地真实配置(忽略)
 │   └── config.example.json     # 模板(入库,保证 config/ 目录存在)
 ├── bot/                        # telegram 交互层
-│   ├── server.py               # Application、handler、私聊/群聊分派、命令响应
-│   ├── client.py               # client 模式的一次性查询与发送
+│   ├── server.py               # Application、handler、频道/私聊/群聊分派、命令响应
+│   ├── client.py               # client 模式的一次性任务(singtel / news)
 │   └── schedule.py             # 定时器注册 + 每日任务
 ├── init/                       # 基础设施层
 │   ├── config.py               # load_config()
 │   └── logger.py               # init_logging()
 ├── business/                   # 业务层
-│   └── singtel.py              # 查询接口调用、签名、结果格式化
+│   ├── singtel.py              # 套餐查询接口调用、签名、结果格式化
+│   └── news.py                 # 60s 新闻接口调用、文本格式化、海报下载
 └── logs/                       # 运行时生成(忽略)
 ```
 
@@ -117,7 +137,7 @@ python/MyTelegramBot/
 
 ```text
 main.py ──> init.config / init.logger
-   ├──> bot.client ──> business.singtel
+   ├──> bot.client ──> business.singtel / business.news
    └──> bot.server ──> bot.schedule ──> business.singtel
                   └──> business.singtel
 ```
@@ -132,23 +152,27 @@ main.py ──> init.config / init.logger
 
 1. `init_logging()`:先初始化日志(必须在读配置之前,配置告警才能落盘);
 2. `load_config()`:读 `config/config.json`,缺失时抛出带修复提示的错误;
-3. 校验 `bot_token` 非空且不是占位值;
-4. 按 `run_mode` 分派:`client` → `asyncio.run(run_client(config))`,`server` → `run_server(config)`。
+3. 校验 `bot_token` 非空且不是占位值;client 模式额外校验 `client_task` 合法、`news` 必须有 `news_channel_id`、`singtel` 必须有 `order_id` 和 `admin_user_id`;
+4. 按 `run_mode` 分派:`client` → `asyncio.run(run_client(config, task))` 并透传退出码,`server` → `run_server(config)`。
 
 ### server 模式(`bot/server.py` + `bot/schedule.py`)
 
 - 构建 `Application`,配置写入 `bot_data["config"]`;
-- 只注册**一个** `MessageHandler(filters.ALL, handle_message)`,内部按会话类型分派:
+- 只注册**一个** `MessageHandler(filters.ALL, handle_message)`,内部按更新类型分派:
+  - `channel_post`:`_log_channel_post()` 只记录 `channel_id` / 频道标题,用于获取私有频道 ID,不回复(永久保留);
   - `handle_private_message()`:记录 user_id / 昵称 / 内容;
   - `handle_group_message()`:额外记录 group_id / 群名;
-  - 两者都调用共用的 `_respond_admin_query()`,因此不会出现"同一消息被处理两次";
+  - 私聊与群聊都调用共用的 `_respond_admin_query()`,因此不会出现"同一消息被处理两次";
 - `register_daily_job()` 注册每日任务;`job_queue` 为 `None`(缺 APScheduler)时直接报错退出,给出安装命令;
 - `app.run_polling()` 阻塞运行。
 
 ### client 模式(`bot/client.py`)
 
-- 不需要 `Application`,直接用 `async with Bot(...)` 发送一条消息;
-- 未配置 `admin_user_id` 时记录错误并退出(退出码仍为 0,便于 Actions 保持绿色;若希望失败变红,可改为 `sys.exit(1)`)。
+- 不需要 `Application`,直接用 `async with Bot(...)` 发送消息;
+- 任务由 `config.client_task` 决定,缺省 `singtel`:
+  - `singtel`:查询一次套餐余量发给 `admin_user_id`;`order_id` / `admin_user_id` 缺失时启动即失败(退出码 1);
+  - `news`:拉取新闻 → `get_chat()` 取频道标题 → 发送文字(超 4096 字符自动分片);配图由 `get_news_image_url()` 预留接口控制,当前返回空串不发图;获取失败时**不发频道**且退出码 1,让 Actions 变红;
+- `news_channel_id` 支持 `@username`、`https://t.me/username`、`-100` 数字 ID;`t.me/+` 邀请链接会被拒绝并提示改用数字 ID。
 
 ---
 
@@ -174,6 +198,26 @@ GET https://api.tsimtech.com/tsim/shopify/getGygPlanInfo?reference={order_id}
 | `expire_time` | `失效时间: <值>` |
 | `data_usage` | `用量: <两位小数> M` |
 
+### 新闻接口
+
+```text
+主用: GET https://60s.okbaike.com/v2/60s?encoding=json
+备用: GET https://60s.zellon.top/v2/60s?encoding=json
+调试: GET https://60s.viki.moe/v2/60s?encoding=json   (仅本地测试,不参与生产)
+```
+
+- 主用失败(网络错误、非 2xx、`code != 200`、空列表)自动切换备用;两个都失败才返回 `None`;
+- 调试地址保存在 `business/news.py: DEBUG_NEWS_URL`,需要调试时临时把 `NEWS_URL` 指过去;
+- 无需鉴权,单地址超时 15 秒;成功码是 `code == 200`(注意不是 singtel 接口的 `1`);
+- 取 `data.news`(条目数组)、`data.date` / `day_of_week` / `lunar_date`、`data.tip`(微语)、`data.link`(原文)、`data.image`(当日海报);
+- 用 `encoding=json` 而不是 `text`,是为了能校验业务码与空列表,避免把错误响应当新闻发出去;
+- 发布内容:当前**只发文字**——60s 海报与正文内容完全重复,已暂时停发图片;
+- 配图接口预留:`business.news.get_news_image_url(news)` 返回图片直链,空串表示不发图;后续换其他图源只改这个函数,客户端无需变动;
+- 图片恢复后:正文解析后 ≤1000 字符时作为图注与图片合并为一条,否则退回「图片 + 文字」两条(文字超 4096 字符自动分片);
+- 正文用 HTML(`parse_mode=HTML`)+ emoji 做视觉强调,所有动态内容经 `html.escape` 转义;Telegram 不支持文字颜色;
+- 正文结构:`📢 频道标题` → `📅 2026年11月1日 星期日` → `🌙 农历 丙午年九月廿三` → 新闻列表(每条之间空一行)→ 微语;原文链接不展示;
+- 频道标题由 `bot.get_chat()` 实时获取,不写入配置;取不到时该行留空,不影响发送。
+
 ### 异常处理
 
 `query_singtel_data()` 对外**永不抛异常**:
@@ -181,10 +225,14 @@ GET https://api.tsimtech.com/tsim/shopify/getGygPlanInfo?reference={order_id}
 - 网络错误、HTTP 非 2xx、`code != 1`、`result` 为空、无可解析字段,统一记录 `logger.exception` 后返回 `查询失败: <原因>`;
 - 因此 server / schedule / client 三个发送点各自只有一行发送代码,不需要重复 `try/except`。
 
+`fetch_daily_news()` 同样不抛异常,失败返回 `None`;`client_task=news` 时不发频道并以退出码 1 结束,便于 GitHub Actions 报警。
+
 ### 定时与时区
 
-- 推送时间:每天 **06:00 SGT(UTC+8)= 22:00 UTC**;
-- 修改位置:`bot/schedule.py` 的 `DAILY_PUSH_TIME`;
+- 套餐推送:每天 **06:00 SGT(UTC+8)= 22:00 UTC**;
+  - 修改位置:`bot/schedule.py` 的 `DAILY_PUSH_TIME`(server 模式)、`.github/workflows/daily_query.yml` 的 cron(client 模式);
+- 新闻推送:每天 **07:00 SGT(UTC+8)= 23:00 UTC**;
+  - 修改位置:`.github/workflows/daily_news.yml` 的 cron;
 - `tzinfo=timezone.utc` 必须保留,否则会按运行机器的本地时区解释。
 
 ### 已知限制
@@ -195,12 +243,17 @@ GET https://api.tsimtech.com/tsim/shopify/getGygPlanInfo?reference={order_id}
 
 ## 五、GitHub Actions
 
-工作流:`.github/workflows/daily_query.yml`
+两个独立工作流,互不影响:
 
-- 触发:每天 22:00 UTC(cron `0 22 * * *`)或手动 `workflow_dispatch`;
-- 步骤:安装 `requirements.txt` → 用 Secrets 生成 `config/config.json` → `python main.py`;
-- 需要的 Secrets:`BOT_TOKEN`、`ADMIN_USER_ID`、`ORDER_ID`;
-- 由于 `config/` 里除模板外没有入库文件,workflow 直接写 `config/config.json` 即可,不需要 `mkdir`。
+| 工作流 | 触发时间 | 任务 | 需要的 Secrets |
+|---|---|---|---|
+| `.github/workflows/daily_query.yml` | 每天 22:00 UTC(06:00 SGT) | `client_task=singtel` | `BOT_TOKEN`、`ADMIN_USER_ID`、`ORDER_ID` |
+| `.github/workflows/daily_news.yml` | 每天 23:00 UTC(07:00 SGT) | `client_task=news` | `BOT_TOKEN`、`NEWS_CHANNEL_ID` |
+
+- 两者都支持手动 `workflow_dispatch`;
+- 步骤:安装 `requirements.txt` → 用 Secrets 生成 `config/config.json`(含各自的 `client_task`)→ `python main.py`;
+- 由于 `config/` 里除模板外没有入库文件,workflow 直接写 `config/config.json` 即可,不需要 `mkdir`;
+- GitHub Actions 的 cron 是 UTC,且实际触发常有 5～20 分钟延迟;仓库连续 60 天无提交时 schedule 会被自动暂停。
 
 ---
 
@@ -212,5 +265,12 @@ GET https://api.tsimtech.com/tsim/shopify/getGygPlanInfo?reference={order_id}
 | `配置文件不存在: .../config/config.json` | 未创建配置,按报错提示 `cp config/config.example.json config/config.json` |
 | `bot_token 未配置或仍为占位值` | `config.json` 还是模板内容,填入真实 token |
 | `ModuleNotFoundError: No module named 'bot'` | 用 `python main.py` 从项目根目录启动,或把 PyCharm 的 Working directory 设为项目根 |
-| 推送时间不对 | 确认没有改动 `DAILY_PUSH_TIME` 的 `tzinfo=timezone.utc` |
+| `client_task 非法` | `config.json` 里 `client_task` 只能是 `singtel` 或 `news` |
+| `client_task=news 但 news_channel_id 未配置` | 填入频道 `@username` 或 `-100` 数字 ID |
+| `client_task=singtel 但 order_id 未配置` | 填入订单号(查询接口的 `reference` 参数) |
+| `client_task=singtel 但 admin_user_id 未配置` | 填入管理员的数字用户 ID |
+| `news_channel_id 无法解析` | `t.me/+xxxx` 邀请链接不支持,改用数字 ID |
+| 频道收不到新闻 | bot 是否已是频道管理员;`news_channel_id` 是否指向正确频道;Actions 是否变红(变红说明接口失败) |
+| 频道 ID 怎么查 | server 模式启动后在频道发一条消息,看日志 `Channel post - channel_id: ...` |
+| 推送时间不对 | 确认没有改动 `DAILY_PUSH_TIME` 的 `tzinfo=timezone.utc` 与两个 workflow 的 cron |
 | Actions 成功但没收到消息 | 检查 `ADMIN_USER_ID` 是否是数字 ID,以及管理员是否先给 bot 发过消息 |

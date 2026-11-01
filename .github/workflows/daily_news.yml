@@ -1,0 +1,45 @@
+name: Daily News Push
+
+on:
+  schedule:
+    # 每天 07:00 SGT (UTC+8) = 23:00 UTC 运行
+    - cron: '0 23 * * *'
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+        working-directory: python/MyTelegramBot
+
+      - name: Generate config.json from secrets
+        working-directory: python/MyTelegramBot
+        env:
+          BOT_TOKEN:       ${{ secrets.BOT_TOKEN }}
+          NEWS_CHANNEL_ID: ${{ secrets.NEWS_CHANNEL_ID }}
+        run: |
+          cat > config/config.json << EOF
+          {
+              "bot_token"       : "${BOT_TOKEN}",
+              "admin_user_id"   : "",
+              "order_id"        : "",
+              "news_channel_id" : "${NEWS_CHANNEL_ID}",
+              "run_mode"        : "client",
+              "client_task"     : "news"
+          }
+          EOF
+
+      - name: Run news push
+        working-directory: python/MyTelegramBot
+        run: python main.py

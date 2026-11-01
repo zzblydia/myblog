@@ -19,6 +19,10 @@ from init.logger import init_logging
 # config.example.json 里的占位前缀;命中说明用户复制了模板但没改 token
 _PLACEHOLDER_TOKEN_PREFIX = "REPLACE_WITH"
 
+# client 模式下 config.client_task 的合法取值
+_CLIENT_TASKS = ("singtel", "news")
+_DEFAULT_CLIENT_TASK = "singtel"   # 缺省值保持老配置、老 workflow 的行为不变
+
 
 def _validate_config(config: dict, log: logging.Logger) -> None:
     """校验启动必需项,失败时给出可直接执行的修复提示。"""
@@ -29,6 +33,27 @@ def _validate_config(config: dict, log: logging.Logger) -> None:
             "(可参考 config/config.example.json)"
         )
         raise SystemExit(1)
+
+    # 任务只在 client 模式下有意义,server 模式忽略 client_task
+    if config.get("run_mode", "server") != "client":
+        return
+
+    task = config.get("client_task", _DEFAULT_CLIENT_TASK)
+    if task not in _CLIENT_TASKS:
+        log.error("client_task 非法: %s(仅支持 singtel / news)", task)
+        raise SystemExit(1)
+
+    if task == "news" and not str(config.get("news_channel_id") or "").strip():
+        log.error("client_task=news 但 news_channel_id 未配置,无法发布新闻")
+        raise SystemExit(1)
+
+    if task == "singtel":
+        if not str(config.get("order_id") or "").strip():
+            log.error("client_task=singtel 但 order_id 未配置,无法查询套餐余量")
+            raise SystemExit(1)
+        if not str(config.get("admin_user_id") or "").strip():
+            log.error("client_task=singtel 但 admin_user_id 未配置,无法发送消息")
+            raise SystemExit(1)
 
 
 def _bootstrap() -> tuple[logging.Logger, dict]:
@@ -45,7 +70,12 @@ def main() -> None:
 
     run_mode = config.get("run_mode", "server")
     if run_mode == "client":
-        asyncio.run(run_client(config))
+        task = config.get("client_task", _DEFAULT_CLIENT_TASK)
+        log.info("Client task: %s", task)
+        # 退出码透传给调用方:news 任务失败时让 GitHub Actions 变红
+        exit_code = asyncio.run(run_client(config, task))
+        if exit_code:
+            raise SystemExit(exit_code)
     elif run_mode == "server":
         run_server(config)
     else:

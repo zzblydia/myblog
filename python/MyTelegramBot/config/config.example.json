@@ -1,6 +1,8 @@
 {
-    "bot_token"     : "REPLACE_WITH_BOT_TOKEN",
-    "admin_user_id" : "",
-    "order_id"      : "",
-    "run_mode"      : "server"
+    "bot_token"       : "REPLACE_WITH_BOT_TOKEN",
+    "admin_user_id"   : "",
+    "order_id"        : "",
+    "news_channel_id" : "",
+    "run_mode"        : "server",
+    "client_task"     : "singtel"
 }

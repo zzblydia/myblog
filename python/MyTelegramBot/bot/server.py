@@ -40,7 +40,16 @@ def run_server(config: dict) -> None:
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """统一入口:按会话类型分派给私聊/群聊处理函数。"""
+    """统一入口:按更新类型分派给频道/私聊/群聊处理函数。
+
+    MessageHandler(filters.ALL) 通过 Update.effective_message 匹配,频道帖子
+    (channel_post)与普通消息共用同一个 handler,所以这里必须先分流:
+    否则 update.message 为 None,频道帖子会被静默丢弃。
+    """
+    if update.channel_post is not None:
+        _log_channel_post(update)
+        return
+
     message = update.message
     if message is None:
         return
@@ -49,6 +58,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         await handle_private_message(update, context)
     else:
         await handle_group_message(update, context)
+
+
+def _log_channel_post(update: Update) -> None:
+    """永久保留:仅打印频道 ID,用于填写 config.news_channel_id;绝不回复频道。
+
+    前提:bot 必须是该频道的管理员,否则 Telegram 不会下发 channel_post。
+    该函数是获取私有频道数字 ID(-100 开头)的唯一途径,不要删除。
+    """
+    post = update.channel_post
+    chat = post.chat
+    log.info(
+        "Channel post - channel_id: %s, channel_title: %s, username: %s, "
+        "message_id: %s, message: %s",
+        chat.id, chat.title, chat.username, post.message_id,
+        post.text or post.caption or "",
+    )
 
 
 async def handle_private_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:

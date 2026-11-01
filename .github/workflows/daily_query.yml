@@ -35,7 +35,8 @@ jobs:
               "bot_token"      : "${BOT_TOKEN}",
               "admin_user_id"  : "${ADMIN_USER_ID}",
               "order_id"       : "${ORDER_ID}",
-              "run_mode"       : "client"
+              "run_mode"       : "client",
+              "client_task"    : "singtel"
           }
           EOF
 
