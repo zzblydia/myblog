@@ -1,5 +1,11 @@
-import hmac
+"""Singtel 套餐余量查询(原 query_mobile_data.py)。
+
+只负责"拿到要发送的文本":不 import telegram、不知道 chat_id、不发送消息。
+发送动作由 bot/server.py、bot/schedule.py、bot/client.py 各自完成。
+"""
+
 import hashlib
+import hmac
 import json
 import logging
 import random
@@ -41,32 +47,21 @@ _BASE_HEADERS = {
 }
 
 
-def _generate_nonce() -> str:
-    """Generate a random nonce string (6-30 chars), matching the website JS logic."""
-    length = random.randint(6, 30)
-    return "".join(random.choice(_NONCE_CHARS) for _ in range(length))
-
-
-def _build_auth_headers() -> dict:
-    """Compute fresh TSIM authentication headers for each request."""
-    nonce     = _generate_nonce()
-    timestamp = str(int(time.time()))
-    message   = (_TSIM_ACCOUNT + nonce + timestamp).encode()
-    signature = hmac.new(_TSIM_SECRET.encode(), message, hashlib.sha256).hexdigest()
-    return {
-        "TSIM-ACCOUNT"  : _TSIM_ACCOUNT,
-        "TSIM-NONCE"    : nonce,
-        "TSIM-TIMESTAMP": timestamp,
-        "TSIM-SIGN"     : signature,
-    }
-
-
 def query_singtel_data(order_id: str) -> str:
-    """Query mobile data plan info and return a formatted message.
+    """查询并返回待发送文本,永不抛异常。
 
-    The API returns result as a list; we use the first element.
-    Only fields that are present and parseable are included in the output.
+    失败时返回 "查询失败: <原因>",这样三个发送点(server/schedule/client)
+    都不需要各自写 try/except,避免重复代码。
     """
+    try:
+        return _query(order_id)
+    except Exception as exc:  # 网络、解析、业务码异常统一在此收口
+        logger.exception("Singtel query failed, order_id=%s", order_id)
+        return f"查询失败: {exc}"
+
+
+def _query(order_id: str) -> str:
+    """原始查询逻辑:成功返回格式化文本,任何异常向上抛出。"""
     headers = {**_BASE_HEADERS, **_build_auth_headers()}
     params  = {"reference": order_id}
 
@@ -114,3 +109,23 @@ def query_singtel_data(order_id: str) -> str:
         raise ValueError("No usable fields found in API response")
 
     return "\n".join(lines)
+
+
+def _generate_nonce() -> str:
+    """Generate a random nonce string (6-30 chars), matching the website JS logic."""
+    length = random.randint(6, 30)
+    return "".join(random.choice(_NONCE_CHARS) for _ in range(length))
+
+
+def _build_auth_headers() -> dict:
+    """Compute fresh TSIM authentication headers for each request."""
+    nonce     = _generate_nonce()
+    timestamp = str(int(time.time()))
+    message   = (_TSIM_ACCOUNT + nonce + timestamp).encode()
+    signature = hmac.new(_TSIM_SECRET.encode(), message, hashlib.sha256).hexdigest()
+    return {
+        "TSIM-ACCOUNT"  : _TSIM_ACCOUNT,
+        "TSIM-NONCE"    : nonce,
+        "TSIM-TIMESTAMP": timestamp,
+        "TSIM-SIGN"     : signature,
+    }

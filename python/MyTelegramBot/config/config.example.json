@@ -1,0 +1,6 @@
+{
+    "bot_token"     : "REPLACE_WITH_BOT_TOKEN",
+    "admin_user_id" : "",
+    "order_id"      : "",
+    "run_mode"      : "server"
+}

@@ -1,3 +1,13 @@
-/config.json
+# 本地真实配置(含 bot_token),不入库
+/config/config.json
+# 运行时日志
+/logs/
+
+# 虚拟环境与编辑器缓存(不锚定路径,覆盖各子包下的 __pycache__)
+/.venv/
+__pycache__/
+/.idea/
+
+# 含隐私数据的参考文件,仅本地使用
 /http_request.txt
 /http_response.json

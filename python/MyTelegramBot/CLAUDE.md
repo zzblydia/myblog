@@ -1,76 +1,53 @@
 # MyTelegramBot
-MyTelegramBot is a python project for my telegram bot to help my life.
 
-## 总体约束
-1. 项目基于开源代码`python-telegram-bot`
-2. 脚本运行环境 python 3.10.2
-3. 脚本启动后先初始化日志模块,日志文件命名默认是时间戳, 默认级别是info,只输出到文件, 不输出到控制台.
-4. 脚本可以通过github action定时运行.
-5. 请保持脚本的功能相对独立 如果有可能 日志部分/配置部分使用单独的文件
+自用的 Telegram 机器人:查询 Singtel/t-sim 套餐余量并推送给管理员。
+**使用说明、项目结构、脚本功能与业务逻辑见 `README.md`**,本文件只写改代码时必须遵守的约束。
 
-## 主要文件
-- `my_telegram_bot.py` 主脚本,功能包括日志初始化,配置读取,bot启动,监听消息
-- `query_mobile_data.py` 功能脚本, 发送查询请求和处理响应,并返回关注信息
-- `bot_logger.py` 日志模块,初始化文件日志
-- `bot_config.py` 配置模块,读取`config.json`
-- `config.json` 配置文件,包含bot_token/admin_user_id/order_id/run_mode
-- `.github/workflows/daily_query.yml` GitHub Actions定时任务
+## 硬约束
 
-## 运行环境
-- 虚拟环境目录: `venv/`
-- 依赖安装: `venv/bin/pip install "python-telegram-bot[job-queue]" requests`
-- 启动命令: `venv/bin/python3 my_telegram_bot.py`
+1. **分层单向**:`main.py → bot/ → business/`;`business/` 不得 import `telegram`、不得发消息、不得出现 `chat_id`。
+2. **查询只返回文本**:`business/singtel.py: query_singtel_data(order_id) -> str` 内部捕获所有异常,失败返回 `查询失败: <原因>`,不向上抛;三个发送点(server/schedule/client)各自只写一行发送代码,不允许各自 `try/except`。
+3. **初始化只发生一次**:`init_logger.init_logging()` 与 `init.config.load_config()` 只允许在 `main._bootstrap()` 调用,且**日志先于配置**;其他模块用 `logging.getLogger(__name__)`,只接收传入的 `config`。
+4. **配置来源唯一**:固定 `config/config.json`,不回退 `config.example.json`;`config.example.json` 只放占位值,真实 `bot_token` 不得写入任何被跟踪文件。
+5. **依赖带 extras**:`python-telegram-bot[job-queue]`,否则 `app.job_queue` 为 `None`;依赖变更同步 `requirements.txt`。
+6. **日志必须脱敏**:任何日志中不得出现 bot token 明文。`init/logger.py` 的 `_RedactingFormatter` 会把 `bot<id>:<token>` 替换为 `bot<redacted>`,该 formatter 不可移除;新增日志代码也不得绕过它直接写文件/控制台。日志文件使用 `TimedRotatingFileHandler`(按天轮转、保留 14 份),不要改回普通 `FileHandler`,否则文件数无上限。
+7. **Python 3.10 兼容**:GitHub Actions 使用 3.10,不使用 3.11+ 语法。
 
-### 主要功能
-- 查询手机套餐余量,并发送给管理员.  
-- 接收管理员的查询请求,查询手机套餐余量并响应.  
+## 目录与职责
 
-查询功能分两种情况,需要同时支持:  
-1.脚本长期运行,bot长期在线,bot定时查询(每天一次)并发送给管理员.  
-2.脚本定时运行,bot查询并发送给管理员.  
-运行模式通过`config.json`中的"run_mode"决定, `server`代表长期运行,`client`代表定时运行.  
+| 路径 | 职责 |
+|---|---|
+| `main.py` | 入口:日志/配置初始化、`bot_token` 校验、按 `run_mode` 分派 |
+| `bot/server.py` | `Application` 构建、单一 handler 注册、私聊/群聊分派、`_respond_admin_query` |
+| `bot/schedule.py` | `register_daily_job`(含 job_queue 缺失检查)、`scheduled_query` |
+| `bot/client.py` | client 模式:一次性查询与发送 |
+| `init/config.py` | `load_config()`,默认 `<项目根>/config/config.json` |
+| `init/logger.py` | `init_logging()`,写 `<项目根>/logs/<时间戳>.log`,自动建目录 |
+| `business/singtel.py` | 查询接口、签名、结果格式化;不含 telegram 依赖 |
 
-### 详细逻辑
-1.脚本启动后, 读取当前目录的配置文件`config.json`.其内容格式示例如下:
-```
-{
-    "bot_token" : "abc",
-    "admin_user_id" : "12345",
-    "order_id" : "123456",
-    "run_mode" : "server" 
-}
-```
-如果管理员还没关注机器人, 则`admin_user_id`可能为空.此时只按照后续要求打印消息,不做任何响应.  
+`init/config.py` 与 `init/logger.py` 中的 `Path(__file__).parent.parent` 依赖 "`init/` 直接位于项目根" 这一前提,移动包层级时必须同步修改。
 
-2.脚本启动后, 监听收到的个人消息和所在的群组消息.  
-如果是个人消息, 打印用户id,用户昵称,用户消息.  
-如果是群主消息, 打印群组id,用户id,群组名称,用户昵称,用户消息  
+## 行为契约(改动前先确认不要破坏)
 
-3.如果消息发送用户的id是管理员, 且消息内容符合以下, 则响应. 其他人的消息则忽略.
-- /query singtel
+- 每日推送:**22:00 UTC = 06:00 SGT**,常量 `DAILY_PUSH_TIME`;
+- 仅响应 `admin_user_id` 本人发送的 `/query singtel`;`admin_user_id` 为空时只记日志、不响应、不推送;
+- 私聊与群聊都会响应,日志字段不同;两条路径共用 `_respond_admin_query`,注册的 handler 只有一个;
+- client 模式查询一次即退出,不构建 `Application`;
+- 日志 INFO 级、同时输出到文件与控制台;文件为 `logs/bot.log`,按天轮转保留 14 份;两者共用脱敏 formatter。
 
-4.打开如下页面, 输入`order_id`,并进行查询:
-```
-https://search.t-sim.hk/dataplan/order
-```
-脚本通过发送http请求查询.发送请求时请模拟windows下的chrome浏览器, 发送的请求内容和响应内容可以通过debug日志打印.  
-http请求的内容请参照`http_request.txt`, http响应的内容格式请参照`http_response.json`.  
-警告:这两个文件的内容可能很有隐私敏感数据,内容和格式仅供参考, 请在本地使用工具处理,禁止使用互联网传输.  
+## 修改检查清单
 
-实际API端点: `https://api.tsimtech.com/tsim/shopify/getGygPlanInfo?reference={order_id}`  
-认证方式: 每次请求动态生成签名头,算法已在`query_mobile_data.py`中实现,无需手动维护.  
+1. 新增/移动/重命名模块 → 同步 `.github/workflows/daily_query.yml`、`README.md`、本文件的目录表;
+2. 新增依赖 → 更新 `requirements.txt`,并保留 `[job-queue]` extra;
+3. 配置字段变化 → 同步 README 配置表与 `main._validate_config()`;
+4. 定时时间变化 → 只改 `bot/schedule.py: DAILY_PUSH_TIME`,同步 README;
+5. docstring 只写"为什么/副作用/异常",不复述函数名与签名;行内注释只解释非显而易见的实现;
+6. 提交前:`python -m compileall .`;`python -c "from business.singtel import query_singtel_data"` 应能在无 telegram 依赖时通过;确认日志中无 token 明文(搜索 `bot\d+:`)。
+7. 涉及日志改动时,验证 `logs/` 下新文件里 `bot<id>:<token>` 已被替换为 `bot<redacted>`。
 
-5.对于响应的json,关注信息是
- - channel_dataplan_name 套餐名称(字符串)  
- - expire_time 失效时间(格式 2026-01-01 11:11:11)  
- - data_usage 用量,单位M(格式 1234.56)  
- 对于异常,仅返回正常字段即可.  
+## 禁止事项
 
-6.bot返回关注信息给管理员.
-
-## GitHub Actions
-- 工作流文件: `.github/workflows/daily_query.yml`
-- 触发方式: 定时(cron)
-- 运行模式: `client`(一次性查询后退出)
-- 敏感配置通过GitHub Secrets注入,在workflow中生成`config.json`
-- 所需Secrets: `BOT_TOKEN`, `ADMIN_USER_ID`, `ORDER_ID`
+- 在业务模块内读取配置或初始化日志;
+- 用 `sys.path` 注入解决跨包导入;
+- 在 `business/` 内返回 telegram 对象或调用 `send_message`;
+- 主动重构本次需求以外的代码。

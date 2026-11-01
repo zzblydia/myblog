@@ -1,0 +1,3 @@
+# 运行依赖;必须带 [job-queue],否则 app.job_queue 为 None
+python-telegram-bot[job-queue]==22.7
+requests>=2.31,<3
