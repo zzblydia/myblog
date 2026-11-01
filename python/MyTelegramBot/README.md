@@ -171,7 +171,7 @@ main.py ──> init.config / init.logger
 - 不需要 `Application`,直接用 `async with Bot(...)` 发送消息;
 - 任务由 `config.client_task` 决定,缺省 `singtel`:
   - `singtel`:查询一次套餐余量发给 `admin_user_id`;`order_id` / `admin_user_id` 缺失时启动即失败(退出码 1);
-  - `news`:拉取新闻 → `get_chat()` 取频道标题 → 发送文字(超 4096 字符自动分片);配图由 `get_news_image_url()` 预留接口控制,当前返回空串不发图;获取失败时**不发频道**且退出码 1,让 Actions 变红;
+  - `news`:拉取新闻 → `get_chat()` 取频道标题 → 发送文字(超 4096 字符自动分片);配图由 `get_news_image_url()` 预留接口控制,当前返回空串不发图;获取或发送失败时退出码 1,让 Actions 变红;
 - `news_channel_id` 支持 `@username`、`https://t.me/username`、`-100` 数字 ID;`t.me/+` 邀请链接会被拒绝并提示改用数字 ID。
 
 ---

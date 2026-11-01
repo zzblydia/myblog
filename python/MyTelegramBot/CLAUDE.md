@@ -35,7 +35,7 @@
 - 仅响应 `admin_user_id` 本人发送的 `/query singtel`;`admin_user_id` 为空时只记日志、不响应、不推送;
 - 私聊与群聊都会响应,日志字段不同;两条路径共用 `_respond_admin_query`,注册的 handler 只有一个;
 - 频道帖子(`channel_post`)只由 `_log_channel_post` 记录 `channel_id` / 标题,**永不回复**;该接口用于获取私有频道数字 ID,永久保留;
-- client 模式执行一次即退出,不构建 `Application`;任务由 `config.client_task` 决定,缺省 `singtel`,非法值启动即失败;`news` 缺 `news_channel_id`、`singtel` 缺 `order_id` 或 `admin_user_id` 时启动即失败;`news` 获取失败时不发频道并返回退出码 1;
+- client 模式执行一次即退出,不构建 `Application`;任务由 `config.client_task` 决定,缺省 `singtel`,非法值启动即失败;`news` 缺 `news_channel_id`、`singtel` 缺 `order_id` 或 `admin_user_id` 时启动即失败;client 任务发送侧 `TelegramError` 统一在任务内收口并返回退出码 1(不回抛 traceback);
 - `news_channel_id` 支持 `@username` / `t.me/username` / `-100` 数字 ID,`t.me/+` 邀请链接必须拒绝;
 - 新闻接口固定「主用 `60s.okbaike.com` → 备用 `60s.zellon.top`」顺序,主用失败必须自动切备用;`DEBUG_NEWS_URL`(60s.viki.moe)仅本地调试,不得用于生产请求;
 - news 正文使用 HTML(`parse_mode=HTML`)+ emoji,动态内容必须 `html.escape`;标题/日期/农历顺序固定为「频道标题 → 日期星期 → 农历」,不展示原文链接;

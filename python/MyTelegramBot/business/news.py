@@ -164,10 +164,8 @@ def _fetch_from(url: str) -> DailyNews:
     if not news:
         raise ValueError("API returned empty news list")
 
+    # image 目前不参与发送(配图走 get_news_image_url),仅原样保存,缺失不告警
     image = data.get("image") or ""
-    if not image:
-        # 缺图不致命:客户端会跳过图片只发文字
-        logger.warning("News image URL missing, will send text only")
 
     return DailyNews(
         date=data.get("date") or "",

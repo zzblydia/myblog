@@ -6,6 +6,7 @@
 """
 
 import logging
+import re
 
 from telegram import Bot
 from telegram.constants import ParseMode
@@ -38,13 +39,18 @@ async def _run_singtel(config: dict) -> int:
     """原 client 行为:查询一次套餐余量并发给管理员。
 
     order_id 与 admin_user_id 已在 main._validate_config 中校验,这里直接使用。
+    Telegram 侧失败统一在此收口,避免 traceback 冒到 main。
     """
     # client 模式不需要 Application/job_queue,直接用 Bot 发一条消息即可
-    async with Bot(token=config["bot_token"]) as bot:
-        await bot.send_message(
-            chat_id=config["admin_user_id"],
-            text=query_singtel_data(config.get("order_id", "")),
-        )
+    try:
+        async with Bot(token=config["bot_token"]) as bot:
+            await bot.send_message(
+                chat_id=config["admin_user_id"],
+                text=query_singtel_data(config.get("order_id", "")),
+            )
+    except TelegramError as exc:
+        log.error("Singtel query failed: %s", exc)
+        return 1
 
     log.info("Client mode finished: singtel")
     return 0
@@ -62,23 +68,28 @@ async def _run_news(config: dict) -> int:
         log.error("client mode: 新闻获取失败,本次不发布")
         return 1
 
-    async with Bot(token=config["bot_token"]) as bot:
-        channel_title = await _get_channel_title(bot, channel_id)
-        text = format_news_message(news, channel_title)
+    # Telegram 侧失败统一在此收口(含 Bot 初始化、get_chat、send),避免 traceback
+    try:
+        async with Bot(token=config["bot_token"]) as bot:
+            channel_title = await _get_channel_title(bot, channel_id)
+            text = format_news_message(news, channel_title)
 
-        # 图源由 business.get_news_image_url 决定;返回空串时不发图,只发文字
-        image_url = get_news_image_url(news)
-        caption = text if image_url and plain_text_length(text) <= _CAPTION_LIMIT else None
-        photo_sent = await _send_photo(bot, channel_id, image_url, caption=caption)
+            # 图源由 business.get_news_image_url 决定;返回空串时不发图,只发文字
+            image_url = get_news_image_url(news)
+            caption = text if image_url and plain_text_length(text) <= _CAPTION_LIMIT else None
+            photo_sent = await _send_photo(bot, channel_id, image_url, caption=caption)
 
-        # 图注已带完整正文时不再重复发送;图片缺失/发送失败/正文超长时单独发文字
-        if caption is None or not photo_sent:
-            for chunk in _split_text(text, _SPLIT_LIMIT):
-                await bot.send_message(
-                    chat_id=channel_id,
-                    text=chunk,
-                    parse_mode=ParseMode.HTML,
-                )
+            # 图注已带完整正文时不再重复发送;图片缺失/发送失败/正文超长时单独发文字
+            if caption is None or not photo_sent:
+                for chunk in _split_text(text, _SPLIT_LIMIT):
+                    await bot.send_message(
+                        chat_id=channel_id,
+                        text=chunk,
+                        parse_mode=ParseMode.HTML,
+                    )
+    except TelegramError as exc:
+        log.error("News push failed: %s", exc)
+        return 1
 
     log.info("Client mode finished: news, channel=%s", channel_id)
     return 0
@@ -150,8 +161,8 @@ def _normalize_channel_id(raw: str) -> str | None:
     if not value:
         return None
 
-    # 频道数字 ID 为负,群组 ID 也可能为负
-    if value.lstrip("-").isdigit():
+    # 频道/群组数字 ID:可带一个前导负号,后面必须是纯数字
+    if re.fullmatch(r"-?\d+", value):
         return value
 
     if value.startswith("@"):
@@ -199,4 +210,5 @@ def _split_text(text: str, limit: int) -> list[str]:
     if current:
         chunks.append("\n".join(current))
 
-    return chunks or [""]
+    # 空文本返回空列表,调用方 for 循环自然跳过,不会发空消息
+    return chunks
