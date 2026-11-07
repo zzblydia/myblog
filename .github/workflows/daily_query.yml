@@ -26,19 +26,29 @@ jobs:
       - name: Generate config.json from secrets
         working-directory: python/MyTelegramBot
         env:
-          BOT_TOKEN:      ${{ secrets.BOT_TOKEN }}
-          ADMIN_USER_ID:  ${{ secrets.ADMIN_USER_ID }}
-          ORDER_ID:       ${{ secrets.ORDER_ID }}
+          BOT_TOKEN:         ${{ secrets.BOT_TOKEN }}
+          ADMIN_USER_ID:     ${{ secrets.ADMIN_USER_ID }}
+          ORDER_ID:          ${{ secrets.ORDER_ID }}
+          EMAIL:             ${{ secrets.EMAIL }}
+          DIY_PASS:          ${{ secrets.DIY_PASS }}
         run: |
-          cat > config/config.json << EOF
-          {
-              "bot_token"      : "${BOT_TOKEN}",
-              "admin_user_id"  : "${ADMIN_USER_ID}",
-              "order_id"       : "${ORDER_ID}",
-              "run_mode"       : "client",
-              "client_task"    : "singtel"
+          python - <<'PY'
+          import json
+          import os
+
+          # 用 Python 写 JSON,避免密码中的引号/反斜杠破坏 shell heredoc
+          config = {
+              "bot_token": os.environ["BOT_TOKEN"],
+              "admin_user_id": os.environ["ADMIN_USER_ID"],
+              "order_id": os.environ["ORDER_ID"],
+              "email": os.environ.get("EMAIL", ""),
+              "pass": os.environ.get("DIY_PASS", ""),
+              "run_mode": "client",
+              "client_task": "phone",
           }
-          EOF
+          with open("config/config.json", "w", encoding="utf-8") as f:
+              json.dump(config, f, ensure_ascii=False, indent=4)
+          PY
 
       - name: Run query
         working-directory: python/MyTelegramBot

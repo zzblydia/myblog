@@ -20,7 +20,7 @@ from init.logger import init_logging
 _PLACEHOLDER_TOKEN_PREFIX = "REPLACE_WITH"
 
 # client 模式下 config.client_task 的合法取值
-_CLIENT_TASKS = ("singtel", "news")
+_CLIENT_TASKS = ("singtel", "news", "3hk", "phone")
 _DEFAULT_CLIENT_TASK = "singtel"   # 缺省值保持老配置、老 workflow 的行为不变
 
 
@@ -40,7 +40,7 @@ def _validate_config(config: dict, log: logging.Logger) -> None:
 
     task = config.get("client_task", _DEFAULT_CLIENT_TASK)
     if task not in _CLIENT_TASKS:
-        log.error("client_task 非法: %s(仅支持 singtel / news)", task)
+        log.error("client_task 非法: %s(仅支持 singtel / news / 3hk / phone)", task)
         raise SystemExit(1)
 
     if task == "news" and not str(config.get("news_channel_id") or "").strip():
@@ -54,6 +54,32 @@ def _validate_config(config: dict, log: logging.Logger) -> None:
         if not str(config.get("admin_user_id") or "").strip():
             log.error("client_task=singtel 但 admin_user_id 未配置,无法发送消息")
             raise SystemExit(1)
+
+    # 3hk 任务必须在本机配置中提供 3HK 凭证
+    if task == "3hk":
+        if not str(config.get("email") or "").strip():
+            log.error("client_task=3hk 但 email 未配置,无法登录 3HK")
+            raise SystemExit(1)
+        if not str(config.get("pass") or "").strip():
+            log.error("client_task=3hk 但 pass 未配置,无法登录 3HK")
+            raise SystemExit(1)
+        if not str(config.get("admin_user_id") or "").strip():
+            log.error("client_task=3hk 但 admin_user_id 未配置,无法发送消息")
+            raise SystemExit(1)
+
+    # phone = singtel + 3hk;3HK 凭证缺失时只查 singtel,不阻断任务
+    if task == "phone":
+        if not str(config.get("order_id") or "").strip():
+            log.error("client_task=phone 但 order_id 未配置,无法查询 Singtel")
+            raise SystemExit(1)
+        if not str(config.get("admin_user_id") or "").strip():
+            log.error("client_task=phone 但 admin_user_id 未配置,无法发送消息")
+            raise SystemExit(1)
+        if not (
+            str(config.get("email") or "").strip()
+            and str(config.get("pass") or "").strip()
+        ):
+            log.warning("client_task=phone 但 email/pass 未完整配置,本次仅查询 Singtel")
 
 
 def _bootstrap() -> tuple[logging.Logger, dict]:

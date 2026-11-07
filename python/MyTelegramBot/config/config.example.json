@@ -3,6 +3,8 @@
     "admin_user_id"   : "",
     "order_id"        : "",
     "news_channel_id" : "",
+    "email"           : "",
+    "pass"            : "",
     "run_mode"        : "server",
     "client_task"     : "singtel"
 }

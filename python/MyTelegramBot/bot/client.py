@@ -2,7 +2,9 @@
 
 任务由 config.client_task 决定:
 - singtel:查询套餐余量并推送给管理员;
-- news:拉取每日新闻并发布到频道(正文可放进图注时合并为一条,否则图片 + 文字)。
+- news:拉取每日新闻并发布到频道(正文可放进图注时合并为一条,否则图片 + 文字);
+- 3hk:查询 3HK DIY 余额与到期时间并推送给管理员;
+- phone:先查 Singtel,再查 3HK,把成功结果合并成一条消息发送。
 """
 
 import logging
@@ -20,6 +22,7 @@ from business.news import (
     plain_text_length,
 )
 from business.singtel import query_singtel_data
+from business.three_hk import query_3hk_data
 
 log = logging.getLogger(__name__)
 
@@ -27,11 +30,18 @@ _SPLIT_LIMIT = 4000      # Telegram 单条上限 4096,留余量避免分片后�
 _CAPTION_LIMIT = 1000    # 图注上限 1024,按解析后长度判断,留少量余量
 _PUBLIC_CHANNEL_PREFIXES = ("https://t.me/", "http://t.me/", "t.me/")
 
+# business 层查询失败时统一以该前缀返回,phone 任务据此决定是否展示结果
+_QUERY_FAILED_PREFIX = "查询失败"
+
 
 async def run_client(config: dict, task: str) -> int:
     """执行一次任务并返回进程退出码(0 成功,非 0 失败)。"""
     if task == "news":
         return await _run_news(config)
+    if task == "3hk":
+        return await _run_three_hk(config)
+    if task == "phone":
+        return await _run_phone(config)
     return await _run_singtel(config)
 
 
@@ -54,6 +64,98 @@ async def _run_singtel(config: dict) -> int:
 
     log.info("Client mode finished: singtel")
     return 0
+
+
+async def _run_three_hk(config: dict) -> int:
+    """查询 3HK DIY 余额与到期时间并发给管理员。
+
+    email / pass / admin_user_id 已在 main._validate_config 中校验;
+    凭证只在内存中传给 business 层,不写日志、不落盘。
+    """
+    # 查询函数自身不会抛异常,失败时返回 "查询失败: <原因>"
+    text = query_3hk_data(
+        str(config.get("email") or ""),
+        str(config.get("pass") or ""),
+    )
+
+    try:
+        async with Bot(token=config["bot_token"]) as bot:
+            await bot.send_message(
+                chat_id=config["admin_user_id"],
+                text=text,
+            )
+    except TelegramError as exc:
+        log.error("3HK push failed: %s", exc)
+        return 1
+
+    log.info("Client mode finished: 3hk")
+    return 0
+
+
+async def _run_phone(config: dict) -> int:
+    """依次查询 Singtel 与 3HK,只把成功结果合并成一条消息发送。
+
+    3HK 凭证缺失时跳过第二次查询,只发送 Singtel 结果;任一查询失败时保留
+    该段并显示"任务失败",同时返回退出码 1,便于 GitHub Actions 暴露问题。
+    """
+    singtel_text = query_singtel_data(str(config.get("order_id") or ""))
+    singtel_ok = _is_query_success(singtel_text)
+
+    email = str(config.get("email") or "").strip()
+    password = str(config.get("pass") or "").strip()
+    three_hk_text: str | None = None
+    three_hk_ok = True
+
+    # 凭证不完整时跳过 3HK,而不是让整个 phone 任务失败(main 启动时已告警)
+    if email and password:
+        three_hk_text = query_3hk_data(email, password)
+        three_hk_ok = _is_query_success(three_hk_text)
+
+    text = _format_phone_message(singtel_text, three_hk_text)
+
+    try:
+        async with Bot(token=config["bot_token"]) as bot:
+            await bot.send_message(
+                chat_id=config["admin_user_id"],
+                text=text,
+            )
+    except TelegramError as exc:
+        log.error("Phone query push failed: %s", exc)
+        return 1
+
+    log.info(
+        "Client mode finished: phone, singtel_ok=%s, three_hk_ok=%s",
+        singtel_ok,
+        three_hk_ok,
+    )
+    return 0 if singtel_ok and three_hk_ok else 1
+
+
+def _is_query_success(text: str) -> bool:
+    """空文本或 business 层的"查询失败"前缀都视为失败。"""
+    body = text.strip()
+    return bool(body) and not body.startswith(_QUERY_FAILED_PREFIX)
+
+
+def _format_phone_message(singtel_text: str, three_hk_text: str | None) -> str:
+    """两段式合并;3HK 为 None 表示凭证缺失、本次跳过。"""
+    sections = [_format_phone_section("Singtel", singtel_text)]
+    if three_hk_text is not None:
+        sections.append(_format_phone_section("3HK DIY", three_hk_text))
+    return "\n\n".join(sections)
+
+
+def _format_phone_section(title: str, text: str) -> str:
+    """标题 + 正文;正文为空或查询失败时统一显示"任务失败"。
+
+    3HK 的成功文本自带 "3HK DIY" 标题,此时不再重复添加。
+    """
+    body = text.strip()
+    if not _is_query_success(body):
+        return f"{title}\n任务失败"
+    if body.startswith(title):
+        return body
+    return f"{title}\n{body}"
 
 
 async def _run_news(config: dict) -> int:

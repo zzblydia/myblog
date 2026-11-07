@@ -14,8 +14,8 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# 调试链接:仅用于本地测试接口,不参与生产请求;需要调试时临时把 NEWS_URL 指过来
-DEBUG_NEWS_URL = "https://60s.viki.moe/v2/60s"
+# 调试链接(仅用于本地测试,不参与生产): https://60s.viki.moe/v2/60s
+# 需要调试时把 NEWS_URL 临时改成该地址
 
 # 生产链接:主用失败自动切备用
 NEWS_URL = "https://60s.okbaike.com/v2/60s"
