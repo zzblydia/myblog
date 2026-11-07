@@ -1,4 +1,4 @@
-name: Daily SIM Query
+name: Daily SIM & News Query
 
 on:
   schedule:
@@ -7,8 +7,13 @@ on:
   workflow_dispatch:  # 允许手动触发
 
 jobs:
-  query:
+  client:
     runs-on: ubuntu-latest
+    strategy:
+      # phone 与 news 互不影响:一个失败不取消另一个
+      fail-fast: false
+      matrix:
+        client_task: [phone, news]
 
     steps:
       - name: Checkout repository
@@ -23,33 +28,25 @@ jobs:
         run: pip install -r requirements.txt
         working-directory: python/MyTelegramBot
 
-      - name: Generate config.json from secrets
+      - name: Generate config.json from TGB_CONFIG
         working-directory: python/MyTelegramBot
         env:
-          BOT_TOKEN:         ${{ secrets.BOT_TOKEN }}
-          ADMIN_USER_ID:     ${{ secrets.ADMIN_USER_ID }}
-          ORDER_ID:          ${{ secrets.ORDER_ID }}
-          EMAIL:             ${{ secrets.EMAIL }}
-          DIY_PASS:          ${{ secrets.DIY_PASS }}
+          TGB_CONFIG: ${{ secrets.TGB_CONFIG }}
+          CLIENT_TASK: ${{ matrix.client_task }}
         run: |
           python - <<'PY'
           import json
           import os
 
-          # 用 Python 写 JSON,避免密码中的引号/反斜杠破坏 shell heredoc
-          config = {
-              "bot_token": os.environ["BOT_TOKEN"],
-              "admin_user_id": os.environ["ADMIN_USER_ID"],
-              "order_id": os.environ["ORDER_ID"],
-              "email": os.environ.get("EMAIL", ""),
-              "pass": os.environ.get("DIY_PASS", ""),
-              "run_mode": "client",
-              "client_task": "phone",
-          }
+          # TGB_CONFIG 是完整 JSON;先解析校验,避免写入非法内容
+          config = json.loads(os.environ["TGB_CONFIG"])
+          # CI 固定 client 模式,任务由 matrix 决定,避免 JSON 中的值影响调度
+          config["run_mode"] = "client"
+          config["client_task"] = os.environ["CLIENT_TASK"]
           with open("config/config.json", "w", encoding="utf-8") as f:
               json.dump(config, f, ensure_ascii=False, indent=4)
           PY
 
-      - name: Run query
+      - name: Run client task
         working-directory: python/MyTelegramBot
         run: python main.py

@@ -1,8 +1,9 @@
 """3HK DIY 预付费卡余额与到期时间查询。
 
-只负责"拿到要发送的文本":不 import telegram、不读配置文件、不发送消息。
-凭证由调用方从 config/config.json 读取后以参数传入;本模块不接触配置文件,
-也不在日志中输出邮箱、密码、cookie 或响应体。
+只负责"拿到要发送的文本":不 import telegram、不发送消息。
+`run_three_hk()` 会自行读取 config/config.json 的 diy_email / diy_pass,
+也可直接运行本文件调试;`query_3hk_data()` 是纯函数,凭证由调用方传入。
+日志不输出邮箱、密码、cookie 或响应体。
 
 查询链路来自 3HK DIY 前端(v0.68.0):
   POST   /ft-prepaid-pro/user/login/
@@ -16,7 +17,6 @@ subscription.subscriptionOffers[].subscriptionProducts[].matrixxBalanceInfos[]
 """
 
 import logging
-import os
 import re
 import sys
 from dataclasses import dataclass
@@ -114,6 +114,26 @@ def query_3hk_data(
         if logged_in:
             _safe_logout(session)
         session.close()
+
+
+def run_three_hk(config: dict | None = None) -> str | None:
+    """任务入口:自行解析 diy_email / diy_pass;凭证缺失返回 None。
+
+    返回 None 表示"本次没有执行查询",由调用方决定跳过(phone)或报错(3hk);
+    其余情况返回查询文本,失败文本同样以 "查询失败" 开头。
+    """
+    if config is None:
+        from init.config import load_config
+
+        config = load_config()
+
+    email = str(config.get("diy_email") or "").strip()
+    password = str(config.get("diy_pass") or "").strip()
+    if not email or not password:
+        logger.warning("3HK 凭证未配置,跳过查询")
+        return None
+
+    return query_3hk_data(email, password)
 
 
 def format_three_hk_message(account: ThreeHkAccount) -> str:
@@ -363,16 +383,18 @@ def _safe_logout(session: requests.Session) -> None:
 
 
 if __name__ == "__main__":
-    # 单文件调试入口:凭证只从环境变量读取,不写入代码或日志
+    # 单文件调试:先补项目根到 sys.path,再由 run_three_hk 自行读取 config.json
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
 
-    debug_email = os.environ.get("THREE_HK_EMAIL", "")
-    debug_password = os.environ.get("THREE_HK_PASSWORD", "")
-    if not debug_email or not debug_password:
-        print("请设置环境变量 THREE_HK_EMAIL / THREE_HK_PASSWORD")
+    text = run_three_hk()
+    if text is None:
+        print("配置缺少 diy_email / diy_pass")
         sys.exit(1)
-
-    print(query_3hk_data(debug_email, debug_password))
+    print(text)

@@ -9,7 +9,7 @@ from datetime import time, timezone
 
 from telegram.ext import Application, ContextTypes
 
-from business.singtel import query_singtel_data
+from business.singtel import run_singtel
 
 log = logging.getLogger(__name__)
 
@@ -40,5 +40,5 @@ async def scheduled_query(context: ContextTypes.DEFAULT_TYPE) -> None:
     log.info("Running scheduled daily query")
     await context.bot.send_message(
         chat_id=admin_user_id,
-        text=query_singtel_data(config.get("order_id", "")),
+        text=run_singtel(config),
     )

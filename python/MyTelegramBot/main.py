@@ -57,11 +57,11 @@ def _validate_config(config: dict, log: logging.Logger) -> None:
 
     # 3hk 任务必须在本机配置中提供 3HK 凭证
     if task == "3hk":
-        if not str(config.get("email") or "").strip():
-            log.error("client_task=3hk 但 email 未配置,无法登录 3HK")
+        if not str(config.get("diy_email") or "").strip():
+            log.error("client_task=3hk 但 diy_email 未配置,无法登录 3HK")
             raise SystemExit(1)
-        if not str(config.get("pass") or "").strip():
-            log.error("client_task=3hk 但 pass 未配置,无法登录 3HK")
+        if not str(config.get("diy_pass") or "").strip():
+            log.error("client_task=3hk 但 diy_pass 未配置,无法登录 3HK")
             raise SystemExit(1)
         if not str(config.get("admin_user_id") or "").strip():
             log.error("client_task=3hk 但 admin_user_id 未配置,无法发送消息")
@@ -76,10 +76,10 @@ def _validate_config(config: dict, log: logging.Logger) -> None:
             log.error("client_task=phone 但 admin_user_id 未配置,无法发送消息")
             raise SystemExit(1)
         if not (
-            str(config.get("email") or "").strip()
-            and str(config.get("pass") or "").strip()
+            str(config.get("diy_email") or "").strip()
+            and str(config.get("diy_pass") or "").strip()
         ):
-            log.warning("client_task=phone 但 email/pass 未完整配置,本次仅查询 Singtel")
+            log.warning("client_task=phone 但 diy_email/diy_pass 未完整配置,本次仅查询 Singtel")
 
 
 def _bootstrap() -> tuple[logging.Logger, dict]:

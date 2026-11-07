@@ -60,6 +60,20 @@ def query_singtel_data(order_id: str) -> str:
         return f"查询失败: {exc}"
 
 
+def run_singtel(config: dict | None = None) -> str:
+    """任务入口:自行解析配置中的 order_id,供 client 与单文件调试共用。
+
+    config 为 None 时才读取 config/config.json,便于与 bot 层解耦;
+    调用方(如 phone 合并任务)可直接传入已有配置,避免重复读盘。
+    """
+    if config is None:
+        from init.config import load_config
+
+        config = load_config()
+
+    return query_singtel_data(str(config.get("order_id") or ""))
+
+
 def _query(order_id: str) -> str:
     """原始查询逻辑:成功返回格式化文本,任何异常向上抛出。"""
     headers = {**_BASE_HEADERS, **_build_auth_headers()}
@@ -129,3 +143,17 @@ def _build_auth_headers() -> dict:
         "TSIM-TIMESTAMP": timestamp,
         "TSIM-SIGN"     : signature,
     }
+
+
+if __name__ == "__main__":
+    # 单文件调试:先补项目根到 sys.path,再让 run_singtel 自行读取 config.json
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
+
+    print(run_singtel())

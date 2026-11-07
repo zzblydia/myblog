@@ -21,8 +21,8 @@ from business.news import (
     get_news_image_url,
     plain_text_length,
 )
-from business.singtel import query_singtel_data
-from business.three_hk import query_3hk_data
+from business.singtel import run_singtel
+from business.three_hk import run_three_hk
 
 log = logging.getLogger(__name__)
 
@@ -46,17 +46,19 @@ async def run_client(config: dict, task: str) -> int:
 
 
 async def _run_singtel(config: dict) -> int:
-    """原 client 行为:查询一次套餐余量并发给管理员。
+    """查询一次套餐余量并发给管理员。
 
     order_id 与 admin_user_id 已在 main._validate_config 中校验,这里直接使用。
     Telegram 侧失败统一在此收口,避免 traceback 冒到 main。
     """
+    text = run_singtel(config)
+
     # client 模式不需要 Application/job_queue,直接用 Bot 发一条消息即可
     try:
         async with Bot(token=config["bot_token"]) as bot:
             await bot.send_message(
                 chat_id=config["admin_user_id"],
-                text=query_singtel_data(config.get("order_id", "")),
+                text=text,
             )
     except TelegramError as exc:
         log.error("Singtel query failed: %s", exc)
@@ -69,14 +71,14 @@ async def _run_singtel(config: dict) -> int:
 async def _run_three_hk(config: dict) -> int:
     """查询 3HK DIY 余额与到期时间并发给管理员。
 
-    email / pass / admin_user_id 已在 main._validate_config 中校验;
+    diy_email / diy_pass / admin_user_id 已在 main._validate_config 中校验;
     凭证只在内存中传给 business 层,不写日志、不落盘。
     """
-    # 查询函数自身不会抛异常,失败时返回 "查询失败: <原因>"
-    text = query_3hk_data(
-        str(config.get("email") or ""),
-        str(config.get("pass") or ""),
-    )
+    text = run_three_hk(config)
+    if text is None:
+        # 理论上 main 已拦截;这里兜底,避免把 None 发给 Telegram
+        log.error("client mode: 3hk 缺少 diy_email / diy_pass")
+        return 1
 
     try:
         async with Bot(token=config["bot_token"]) as bot:
@@ -93,25 +95,18 @@ async def _run_three_hk(config: dict) -> int:
 
 
 async def _run_phone(config: dict) -> int:
-    """依次查询 Singtel 与 3HK,只把成功结果合并成一条消息发送。
+    """依次执行 Singtel 与 3HK 两个任务,只把成功结果合并成一条消息发送。
 
-    3HK 凭证缺失时跳过第二次查询,只发送 Singtel 结果;任一查询失败时保留
-    该段并显示"任务失败",同时返回退出码 1,便于 GitHub Actions 暴露问题。
+    本函数只负责编排:配置解析在 business 层,凭证缺失时 run_three_hk 返回 None,
+    因此这里不再读取 diy_email / diy_pass。任一查询失败时该段显示"任务失败",
+    并返回退出码 1,便于 GitHub Actions 暴露问题。
     """
-    singtel_text = query_singtel_data(str(config.get("order_id") or ""))
-    singtel_ok = _is_query_success(singtel_text)
-
-    email = str(config.get("email") or "").strip()
-    password = str(config.get("pass") or "").strip()
-    three_hk_text: str | None = None
-    three_hk_ok = True
-
-    # 凭证不完整时跳过 3HK,而不是让整个 phone 任务失败(main 启动时已告警)
-    if email and password:
-        three_hk_text = query_3hk_data(email, password)
-        three_hk_ok = _is_query_success(three_hk_text)
-
-    text = _format_phone_message(singtel_text, three_hk_text)
+    results: list[tuple[str, str | None]] = [
+        ("Singtel", run_singtel(config)),
+        ("3HK DIY", run_three_hk(config)),   # None 表示凭证缺失,跳过该段
+    ]
+    ok = all(text is None or _is_query_success(text) for _, text in results)
+    text = _format_phone_message(results)
 
     try:
         async with Bot(token=config["bot_token"]) as bot:
@@ -123,12 +118,8 @@ async def _run_phone(config: dict) -> int:
         log.error("Phone query push failed: %s", exc)
         return 1
 
-    log.info(
-        "Client mode finished: phone, singtel_ok=%s, three_hk_ok=%s",
-        singtel_ok,
-        three_hk_ok,
-    )
-    return 0 if singtel_ok and three_hk_ok else 1
+    log.info("Client mode finished: phone, ok=%s", ok)
+    return 0 if ok else 1
 
 
 def _is_query_success(text: str) -> bool:
@@ -137,11 +128,13 @@ def _is_query_success(text: str) -> bool:
     return bool(body) and not body.startswith(_QUERY_FAILED_PREFIX)
 
 
-def _format_phone_message(singtel_text: str, three_hk_text: str | None) -> str:
-    """两段式合并;3HK 为 None 表示凭证缺失、本次跳过。"""
-    sections = [_format_phone_section("Singtel", singtel_text)]
-    if three_hk_text is not None:
-        sections.append(_format_phone_section("3HK DIY", three_hk_text))
+def _format_phone_message(results: list[tuple[str, str | None]]) -> str:
+    """两段式合并;text 为 None 表示该任务本次跳过(如凭证缺失)。"""
+    sections = [
+        _format_phone_section(title, text)
+        for title, text in results
+        if text is not None
+    ]
     return "\n\n".join(sections)
 
 

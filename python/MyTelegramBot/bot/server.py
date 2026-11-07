@@ -17,7 +17,7 @@ from telegram.ext import (
 )
 
 from bot.schedule import register_daily_job
-from business.singtel import query_singtel_data
+from business.singtel import run_singtel
 
 log = logging.getLogger(__name__)
 
@@ -122,4 +122,4 @@ async def _respond_admin_query(update: Update, context: ContextTypes.DEFAULT_TYP
 
     log.info("Received /query singtel from admin")
     # 查询与异常处理都在 business 层完成,这里只负责投递文本
-    await message.reply_text(query_singtel_data(config.get("order_id", "")))
+    await message.reply_text(run_singtel(config))

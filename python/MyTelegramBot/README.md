@@ -49,8 +49,8 @@ cp config/config.example.json config/config.json
 | `admin_user_id` | 管理员的 Telegram 用户 ID | server 模式为空时只记录消息、不响应指令;`client_task=singtel` / `3hk` / `phone` 时必填 |
 | `order_id` | 订单号,查询接口的 `reference` 参数 | `client_task=singtel` / `phone` 时必填,否则启动即失败 |
 | `news_channel_id` | 新闻推送目标频道 | 支持 `@username`、`https://t.me/username`、`-100` 开头的数字 ID;`client_task=news` 时必填 |
-| `email` | 3HK DIY 登录邮箱 | `client_task=3hk` / `phone` 使用;本地放 `config/config.json`,Actions 中由 Secret 注入 |
-| `pass` | 3HK DIY 登录密码 | `client_task=3hk` / `phone` 使用;本地放 `config/config.json`,Actions 中由 Secret 注入 |
+| `diy_email` | 3HK DIY 登录邮箱 | `client_task=3hk` / `phone` 使用;本地放 `config/config.json`,`TGB_CONFIG` 中同名字段 |
+| `diy_pass` | 3HK DIY 登录密码 | `client_task=3hk` / `phone` 使用;本地放 `config/config.json`,`TGB_CONFIG` 中同名字段 |
 | `run_mode` | `server` 或 `client` | 决定进程行为 |
 | `client_task` | `singtel`、`news`、`3hk` 或 `phone` | 仅 client 模式生效;缺省为 `singtel`,老配置行为不变 |
 
@@ -62,8 +62,8 @@ cp config/config.example.json config/config.json
     "admin_user_id"   : "123456789",
     "order_id"        : "123456",
     "news_channel_id" : "@my_channel",
-    "email"           : "REPLACE_WITH_3HK_EMAIL",
-    "pass"            : "REPLACE_WITH_3HK_PASSWORD",
+    "diy_email"       : "REPLACE_WITH_3HK_EMAIL",
+    "diy_pass"        : "REPLACE_WITH_3HK_PASSWORD",
     "run_mode"        : "server",
     "client_task"     : "singtel"
 }
@@ -86,7 +86,7 @@ client 模式下任务由 `config.json` 的 `client_task` 决定,不需要命令
 - `client_task = "singtel"`(缺省):查询套餐余量并发给 `admin_user_id`;
 - `client_task = "news"`:拉取当日新闻并发布到 `news_channel_id`;
 - `client_task = "3hk"`:只查询 3HK DIY 余额与到期时间并发给 `admin_user_id`;
-- `client_task = "phone"`:先查 Singtel,再查 3HK,把成功结果合并成一条消息发给 `admin_user_id`;`email` / `pass` 缺失时自动跳过 3HK,只发 Singtel。
+- `client_task = "phone"`:先查 Singtel,再查 3HK,把成功结果合并成一条消息发给 `admin_user_id`;`diy_email` / `diy_pass` 缺失时自动跳过 3HK,只发 Singtel。
 
 也可以直接在 PyCharm 里以 `main.py` 为脚本运行;注意 Working directory 必须是项目根目录 `python/MyTelegramBot`,否则 `bot/`、`init/`、`business/` 无法导入。
 
@@ -133,7 +133,7 @@ python/MyTelegramBot/
 ├── init/                       # 基础设施层
 │   ├── config.py               # load_config()
 │   └── logger.py               # init_logging()
-├── business/                   # 业务层
+├── business/                   # 业务层(各模块均可单文件运行)
 │   ├── singtel.py              # 套餐查询接口调用、签名、结果格式化
 │   ├── three_hk.py             # 3HK DIY 余额/到期时间查询(client_task=3hk / phone)
 │   └── news.py                 # 60s 新闻接口调用、文本格式化、海报下载
@@ -159,7 +159,7 @@ main.py ──> init.config / init.logger
 
 1. `init_logging()`:先初始化日志(必须在读配置之前,配置告警才能落盘);
 2. `load_config()`:读 `config/config.json`,缺失时抛出带修复提示的错误;
-3. 校验 `bot_token` 非空且不是占位值;client 模式额外校验 `client_task` 合法、`news` 必须有 `news_channel_id`、`singtel` 必须有 `order_id` 和 `admin_user_id`、`3hk` 必须有 `email` / `pass` / `admin_user_id`、`phone` 必须有 `order_id` 和 `admin_user_id`(`email` / `pass` 缺失时只跳过 3HK);
+3. 校验 `bot_token` 非空且不是占位值;client 模式额外校验 `client_task` 合法、`news` 必须有 `news_channel_id`、`singtel` 必须有 `order_id` 和 `admin_user_id`、`3hk` 必须有 `diy_email` / `diy_pass` / `admin_user_id`、`phone` 必须有 `order_id` 和 `admin_user_id`(`diy_email` / `diy_pass` 缺失时只跳过 3HK);
 4. 按 `run_mode` 分派:`client` → `asyncio.run(run_client(config, task))` 并透传退出码,`server` → `run_server(config)`。
 
 ### server 模式(`bot/server.py` + `bot/schedule.py`)
@@ -179,13 +179,23 @@ main.py ──> init.config / init.logger
 - 任务由 `config.client_task` 决定,缺省 `singtel`:
   - `singtel`:查询一次套餐余量发给 `admin_user_id`;`order_id` / `admin_user_id` 缺失时启动即失败(退出码 1);
   - `news`:拉取新闻 → `get_chat()` 取频道标题 → 发送文字(超 4096 字符自动分片);配图由 `get_news_image_url()` 预留接口控制,当前返回空串不发图;获取或发送失败时退出码 1,让 Actions 变红;
-  - `3hk`:用本地 `config.json` 的 `email` / `pass` 登录 3HK,查询余额与到期时间后发给 `admin_user_id`;`email` / `pass` / `admin_user_id` 缺失时启动即失败(退出码 1);
-  - `phone`:按顺序先查 Singtel、再查 3HK,把成功结果用两段式合并成一条消息发给 `admin_user_id`;失败的查询段显示「任务失败」,并在发送后返回退出码 1;`email` / `pass` 缺失时跳过 3HK,只发 Singtel;`order_id` / `admin_user_id` 缺失时启动即失败;
+  - `3hk`:用本地 `config.json` 的 `diy_email` / `diy_pass` 登录 3HK,查询余额与到期时间后发给 `admin_user_id`;`diy_email` / `diy_pass` / `admin_user_id` 缺失时启动即失败(退出码 1);
+  - `phone`:按顺序先查 Singtel、再查 3HK,把成功结果用两段式合并成一条消息发给 `admin_user_id`;失败的查询段显示「任务失败」,并在发送后返回退出码 1;`diy_email` / `diy_pass` 缺失时跳过 3HK,只发 Singtel;`order_id` / `admin_user_id` 缺失时启动即失败;
 - `news_channel_id` 支持 `@username`、`https://t.me/username`、`-100` 数字 ID;`t.me/+` 邀请链接会被拒绝并提示改用数字 ID。
 
 ---
 
 ## 四、业务逻辑
+
+### 独立运行
+
+三个业务模块都提供单文件入口,可脱离 bot 直接运行;`bot/client.py` 只负责把返回文本发给 Telegram:
+
+```bash
+.venv/bin/python business/singtel.py    # 读取 order_id,打印套餐余量
+.venv/bin/python business/three_hk.py   # 读取 diy_email / diy_pass,打印余额与到期时间
+.venv/bin/python business/news.py       # 抓取并打印当日新闻
+```
 
 ### 查询接口
 
@@ -212,10 +222,14 @@ GET https://api.tsimtech.com/tsim/shopify/getGygPlanInfo?reference={order_id}
 `business/three_hk.py` 提供 3HK DIY 预付费卡的余额与到期时间查询。`client_task=3hk` 会单独发送 3HK 结果;`client_task=phone` 会把它和 Singtel 结果合并成一条消息。它不接入 server / schedule。
 
 ```python
-from business.three_hk import query_3hk_data
+from business.three_hk import run_three_hk, query_3hk_data
 
-# 凭证由调用方从 config/config.json 读取后传入
-text = query_3hk_data(config["email"], config["pass"])
+# 任务入口:config 缺省时自行读取 config/config.json 的 diy_email / diy_pass
+text = run_three_hk()          # 凭证缺失返回 None
+text = run_three_hk(config)    # 复用已加载的配置
+
+# 纯函数:只负责发请求,凭证必须显式传入
+text = query_3hk_data(email, password)
 ```
 
 - 登录:`POST https://www.three.com.hk/ft-prepaid-pro/user/login/`;
@@ -226,16 +240,16 @@ text = query_3hk_data(config["email"], config["pass"])
 - 余额接口失败但资料接口成功时,仍返回到期时间,余额显示 `查询失败`;
 - 失败统一返回 `查询失败: <原因>`,不抛异常;
 - 不做自动重试;遇到 `406` 不自动 `forceLogin`,避免把网页端登录踢下线;
-- 凭证只从调用方传入,模块不读取配置文件,日志不记录邮箱、密码、cookie、请求体、响应体;
-- 本地用 `client_task=3hk` 或 `phone`;GitHub Actions 中由 `phone` 任务调用,凭证来自 `EMAIL` / `DIY_PASS` Secrets,由 workflow 生成 `config.json`,不写入任何入库文件。
+- `run_three_hk()` 负责读取 `diy_email` / `diy_pass`,凭证缺失返回 `None`;`query_3hk_data()` 保持纯函数,日志不记录邮箱、密码、cookie、请求体、响应体;
+- 本地用 `client_task=3hk` 或 `phone`;GitHub Actions 中由 `phone` 任务调用,凭证来自 `TGB_CONFIG` Secret 中的 `diy_email` / `diy_pass`,由 workflow 生成 `config.json`,不写入任何入库文件。
 
-本地调试(两种方式都不会打印账号密码):
+本地调试(都不会打印账号密码):
 
 ```bash
-# 方式一:直接调用函数
-.venv/bin/python -c 'import json; from business.three_hk import query_3hk_data; c=json.load(open("config/config.json", encoding="utf-8")); print(query_3hk_data(c["email"], c["pass"]))'
+# 方式一:直接运行本文件,自动读取 config/config.json
+.venv/bin/python business/three_hk.py
 
-# 方式二:改好 config.json 后走 client 模式(结果发到 Telegram)
+# 方式二:走 client 模式(结果发到 Telegram)
 # client_task=3hk 只查 3HK;client_task=phone 合并 Singtel + 3HK
 .venv/bin/python main.py
 ```
@@ -271,14 +285,13 @@ text = query_3hk_data(config["email"], config["pass"])
 
 `query_3hk_data()` 同样不抛异常,失败返回 `查询失败: <原因>`;`client_task=3hk` 会把这个文本发给管理员,只有 Telegram 发送失败时才返回退出码 1。
 
-`client_task=phone` 先执行 `query_singtel_data()`,再执行 `query_3hk_data()`;单条结果以 `查询失败` 开头时,该段只显示「任务失败」,成功段照常展示并合并发送。任一查询失败或 Telegram 发送失败时,进程返回退出码 1;`email` / `pass` 缺失时跳过 3HK,不视为失败。
+`client_task=phone` 只做编排:依次调用 `run_singtel(config)` 与 `run_three_hk(config)`;单条结果以 `查询失败` 开头时,该段只显示「任务失败」,成功段照常展示并合并发送。`run_three_hk()` 返回 `None` 表示凭证缺失,该段直接跳过。任一查询失败或 Telegram 发送失败时,进程返回退出码 1。
 
 ### 定时与时区
 
-- 套餐推送:每天 **06:00 SGT(UTC+8)= 22:00 UTC**;
+- 套餐与新闻推送:每天 **06:00 SGT(UTC+8)= 22:00 UTC**,`daily_query.yml` 并行执行 `phone` 与 `news` 两个任务;
   - 修改位置:`bot/schedule.py` 的 `DAILY_PUSH_TIME`(server 模式)、`.github/workflows/daily_query.yml` 的 cron(client 模式);
-- 新闻推送:每天 **07:00 SGT(UTC+8)= 23:00 UTC**;
-  - 修改位置:`.github/workflows/daily_news.yml` 的 cron;
+- `daily_news.yml` 只保留手动 `workflow_dispatch`,不再定时运行;
 - `tzinfo=timezone.utc` 必须保留,否则会按运行机器的本地时区解释。
 
 ### 已知限制
@@ -291,18 +304,31 @@ text = query_3hk_data(config["email"], config["pass"])
 
 ## 五、GitHub Actions
 
-两个独立工作流,互不影响:
+两个工作流共用同一个 Secret `TGB_CONFIG`,其值为完整的 `config.json` JSON 文本:
 
-| 工作流 | 触发时间 | 任务 | 需要的 Secrets |
-|---|---|---|---|
-| `.github/workflows/daily_query.yml` | 每天 22:00 UTC(06:00 SGT) | `client_task=phone` | `BOT_TOKEN`、`ADMIN_USER_ID`、`ORDER_ID`、`EMAIL`、`DIY_PASS` |
-| `.github/workflows/daily_news.yml` | 每天 23:00 UTC(07:00 SGT) | `client_task=news` | `BOT_TOKEN`、`NEWS_CHANNEL_ID` |
+| 工作流 | 触发方式 | 执行任务 |
+|---|---|---|
+| `.github/workflows/daily_query.yml` | 每天 22:00 UTC(06:00 SGT)+ 手动 | `phone` 与 `news` 两个并行任务 |
+| `.github/workflows/daily_news.yml` | 仅手动 `workflow_dispatch` | `news` |
 
-`phone` 任务先查 Singtel、再查 3HK,把成功结果合并成一条消息发送;失败段显示「任务失败」并让 workflow 变红。`EMAIL` / `DIY_PASS` 未配置时会自动跳过 3HK,只发送 Singtel 结果。
+`TGB_CONFIG` 至少包含以下字段:
 
-- 两者都支持手动 `workflow_dispatch`;
-- 步骤:安装 `requirements.txt` → 用 Secrets 生成 `config/config.json`(含各自的 `client_task`)→ `python main.py`;
-- `daily_query.yml` 用 Python `json.dump` 生成配置,避免密码中的引号/反斜杠破坏 JSON;
+```json
+{
+    "bot_token"       : "REPLACE_WITH_BOT_TOKEN",
+    "admin_user_id"   : "123456789",
+    "order_id"        : "123456",
+    "diy_email"       : "REPLACE_WITH_3HK_EMAIL",
+    "diy_pass"        : "REPLACE_WITH_3HK_PASSWORD",
+    "news_channel_id" : "@my_channel"
+}
+```
+
+- workflow 会强制写入 `run_mode=client`,并按任务覆盖 `client_task`(`phone` / `news`),Secret 中的同名值不生效;
+- 配置先用 `json.loads` 校验再落盘,密码中的引号、反斜杠、`$` 不会破坏 JSON;
+- `phone` 任务先查 Singtel、再查 3HK,成功结果合并为一条消息;失败段显示「任务失败」并让该任务变红;
+- `diy_email` / `diy_pass` 缺失时 `phone` 自动跳过 3HK,只发送 Singtel;
+- `daily_query.yml` 使用 matrix + `fail-fast: false`,`phone` 与 `news` 互不影响;
 - 由于 `config/` 里除模板外没有入库文件,workflow 直接写 `config/config.json` 即可,不需要 `mkdir`;
 - GitHub Actions 的 cron 是 UTC,且实际触发常有 5～20 分钟延迟;仓库连续 60 天无提交时 schedule 会被自动暂停。
 
@@ -324,4 +350,4 @@ text = query_3hk_data(config["email"], config["pass"])
 | 频道收不到新闻 | bot 是否已是频道管理员;`news_channel_id` 是否指向正确频道;Actions 是否变红(变红说明接口失败) |
 | 频道 ID 怎么查 | server 模式启动后在频道发一条消息,看日志 `Channel post - channel_id: ...` |
 | 推送时间不对 | 确认没有改动 `DAILY_PUSH_TIME` 的 `tzinfo=timezone.utc` 与两个 workflow 的 cron |
-| Actions 成功但没收到消息 | 检查 `ADMIN_USER_ID` 是否是数字 ID,以及管理员是否先给 bot 发过消息 |
+| Actions 成功但没收到消息 | 检查 `TGB_CONFIG` 中的 `admin_user_id` 是否是数字 ID,以及管理员是否先给 bot 发过消息 |

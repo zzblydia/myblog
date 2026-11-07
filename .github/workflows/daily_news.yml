@@ -1,10 +1,8 @@
-name: Daily News Push
+name: Manual News Push
 
 on:
-  schedule:
-    # 每天 07:00 SGT (UTC+8) = 23:00 UTC 运行
-    - cron: '0 23 * * *'
-  workflow_dispatch:  # 允许手动触发
+  # 仅保留手动触发;定时新闻推送已合并到 daily_query.yml 的 news 任务
+  workflow_dispatch:
 
 jobs:
   news:
@@ -23,22 +21,23 @@ jobs:
         run: pip install -r requirements.txt
         working-directory: python/MyTelegramBot
 
-      - name: Generate config.json from secrets
+      - name: Generate config.json from TGB_CONFIG
         working-directory: python/MyTelegramBot
         env:
-          BOT_TOKEN:       ${{ secrets.BOT_TOKEN }}
-          NEWS_CHANNEL_ID: ${{ secrets.NEWS_CHANNEL_ID }}
+          TGB_CONFIG: ${{ secrets.TGB_CONFIG }}
         run: |
-          cat > config/config.json << EOF
-          {
-              "bot_token"       : "${BOT_TOKEN}",
-              "admin_user_id"   : "",
-              "order_id"        : "",
-              "news_channel_id" : "${NEWS_CHANNEL_ID}",
-              "run_mode"        : "client",
-              "client_task"     : "news"
-          }
-          EOF
+          python - <<'PY'
+          import json
+          import os
+
+          # TGB_CONFIG 是完整 JSON;先解析校验,避免写入非法内容
+          config = json.loads(os.environ["TGB_CONFIG"])
+          # 手动工作流固定只跑 news,不受 JSON 中 client_task 影响
+          config["run_mode"] = "client"
+          config["client_task"] = "news"
+          with open("config/config.json", "w", encoding="utf-8") as f:
+              json.dump(config, f, ensure_ascii=False, indent=4)
+          PY
 
       - name: Run news push
         working-directory: python/MyTelegramBot
