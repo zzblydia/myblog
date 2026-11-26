@@ -3,10 +3,14 @@
 
 import json
 import logging
+import os
 import time
 from datetime import datetime
 import psutil
 from miio import Device
+
+# 脚本所在目录：配置文件路径以此为基准，避免受启动时工作目录的影响
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 def setup_logger():
@@ -30,11 +34,23 @@ def setup_logger():
     return logger
 
 
-def load_config(config_path="config.json"):
+def load_config(config_path=None):
     """
     加载配置文件
+    :param config_path: 显式指定的配置路径；为 None 时优先使用脚本目录下的
+                        config_local.json，不存在则回退到 config.json
     """
     logger = logging.getLogger(__name__)
+
+    # 未显式指定时按优先级选择：本地覆盖配置 > 默认配置
+    if config_path is None:
+        local_config = os.path.join(BASE_DIR, "config_local.json")
+        if os.path.isfile(local_config):
+            config_path = local_config
+        else:
+            config_path = os.path.join(BASE_DIR, "config.json")
+
+    logger.info(f"使用配置文件：{config_path}")
 
     try:
         with open(config_path, 'r', encoding='utf-8') as f:
@@ -204,6 +220,8 @@ def main():
         # 主循环
         logger.info("进入主循环，每60秒检查一次电池状态")
 
+        init_turn_on = True
+
         while True:
             try:
                 # 首先检查本机IP是否存在
@@ -226,6 +244,10 @@ def main():
                 need_turn_on = False
                 need_turn_off = False
 
+                if init_turn_on:
+                    # 启动后无条件先上电，待下方确认开启成功后再清除标志，失败则下轮重试
+                    need_turn_on = True
+
                 if percent < low_threshold and not is_charging:
                     logger.info(f"电量低于 {low_threshold}% 且未充电，需要开启插座")
                     need_turn_on = True
@@ -247,9 +269,11 @@ def main():
                         if need_turn_on:
                             if current_status:
                                 logger.debug("插座已经是开启状态，无需重复操作")
+                                init_turn_on = False  # 本来就开着，初始化上电也算完成
                             else:
                                 logger.info(f"电池信息 - 电量: {percent}%, 正在打开插座")
-                                control_plug(device_ip, device_token, True)
+                                if control_plug(device_ip, device_token, True):
+                                    init_turn_on = False  # 确认开启成功才清除，失败保留标志下轮重试
                         elif need_turn_off:
                             if not current_status:
                                 logger.debug("插座已经是关闭状态，无需重复操作")
