@@ -25,6 +25,9 @@ apt install --only-upgrade package_name
 3.习惯了没有任务栏，应用都是全屏，切换应用习惯了用windows键而不是Tab。  
 4.再也不用因为不了解细节纠结使用`Ubuntu`还是`Debian`了，后者拥抱`non-free`软件源后我选择无条件使用。  
 
+### 202611
+1.chrome出现多次页面崩溃,反复刷新页面行,且多次出现.
+
 ## 安装记录  
 1.在Windows环境使用`Ventoy`制作多系统启动U盘,并把镜像`debian-13.6.0-amd64-DVD-1.iso`放进去  
 2.在笔记本电脑A上使用VMware Workstation安装了一把测试镜像没有问题  
@@ -128,7 +131,10 @@ sudo apt install docker-ce=$VERSION_STRING docker-ce-cli=$VERSION_STRING contain
 ```
 # 安装后
 sudo groupadd docker
+
+# 该命令执行后,可以通过docker run的方式读取/root/下的文件,存在非法提权的风险,不再执行.
 sudo usermod -aG docker $USER
+
 newgrp docker
 docker run hello-world
 
